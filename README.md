@@ -19,12 +19,26 @@ Projektet är en del av repo **HFL25** för en kurs på STI.
    cd HFL25
    ```
 
+3. **Hämta beroenden**  
+   I projektroten kör du:  
+   ```bash
+   dart pub get
+   ```
+
 ## Användning
 
-3. **För att räkna**  
+   **För att starta kalkylatorn**  
    I projektroten kör du:  
    ```bash
    dart run
+   ```
+
+   **Exempel**  
+   ```bash
+   Ange första talet: 10
+   Ange andra talet: 5
+   Vilken operation vill du göra? (+, -, *, /): *
+   Resultatet är: 50
    ```
 
 ## Funktioner
