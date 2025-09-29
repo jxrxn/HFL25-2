@@ -2,14 +2,10 @@ import 'dart:io';
 
 void main() {
   // Läs in första talet
-  stdout.write('Ange första talet: ');
-  var input1 = stdin.readLineSync();
-  var a = int.parse(input1 ?? '0'); // konverterar text till int
+  var a = _readNumber('Ange första talet: ');
 
   // Läs in andra talet
-  stdout.write('Ange andra talet: ');
-  var input2 = stdin.readLineSync();
-  var b = int.parse(input2 ?? '0');
+  var b = _readNumber('Ange andra talet: ');
 
   // Fråga efter operation
   stdout.write('Vilken operation vill du göra? (+, -, *, /): ');
@@ -30,5 +26,19 @@ void main() {
     }
   } else {
     print('Ogiltig operation.');
+  }
+}
+
+// Hjälpfunktion för att läsa in och validera siffror
+int _readNumber(String prompt) {
+  while (true) {
+    stdout.write(prompt);
+    var input = stdin.readLineSync();
+    var number = int.tryParse(input ?? '');
+    if (number != null) {
+      return number;
+    } else {
+      print('Ogiltig inmatning. Försök igen.');
+    }
   }
 }
