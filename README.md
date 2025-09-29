@@ -10,5 +10,13 @@ I projektroten kör du:
 
 ```bash
 dart run
+```
+
+## Funktioner
+
+	•	Addition (+)
+	•	Subtraktion (-)
+	•	Multiplikation (*)
+	•	Division (/), med felhantering för division med noll
 
 
