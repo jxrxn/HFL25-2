@@ -27,13 +27,13 @@ Projektet är en del av repo **HFL25** för en kurs på STI – https://www.sti.
 
 ## Användning
 
-1.   **För att starta kalkylatorn**  
+1. **För att starta kalkylatorn**  
    I projektroten kör du:  
    ```bash
    dart run
    ```
 
-2.   **Exempel**  
+2. **Exempel**  
    ```bash
    Ange första talet: 10
    Ange andra talet: 5
