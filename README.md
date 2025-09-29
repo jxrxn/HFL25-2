@@ -3,14 +3,29 @@
 Det här är en enkel kalkylator skriven i Dart som körs i terminalen.  
 Projektet är en del av repo **HFL25** för en kurs på STI.
 
-## Gör såhär
+## Installation
 
-Se till att du har [Dart SDK](https://dart.dev/get-dart) installerad.  
-I projektroten kör du:
+1. **Installera Dart SDK**  
+   Följ instruktionerna här: [dart.dev/get-dart](https://dart.dev/get-dart)  
+   Kontrollera att det fungerar med:  
+   ```bash
+   dart --version
+   ```
+   
+2. **Klona projektet**  
+   Öppna terminalen och kör:  
+   ```bash
+   git clone https://github.com/jxrxn/HFL25.git
+   cd HFL25
+   ```
 
-```bash
-dart run
-```
+## Användning
+
+3. **Klona projektet**  
+   I projektroten kör du:  
+   ```bash
+   dart run
+   ```
 
 ## Funktioner
 
