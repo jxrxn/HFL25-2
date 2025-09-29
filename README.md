@@ -28,7 +28,7 @@ Det här är en enkel kalkylator skriven i Dart som körs i terminalen.
 ## Användning
 
 1. **För att starta kalkylatorn**  
-   I projektroten kör du:  
+   I terminalen:  
    ```bash
    dart run
    ```
