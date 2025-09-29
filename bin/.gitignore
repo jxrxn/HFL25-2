@@ -1,0 +1,17 @@
+# Dart & Pub
+.dart_tool/
+.packages
+build/
+
+# JS-artifakter om du kompilerar till web
+*.dart.js
+*.js.deps
+*.js.map
+
+# IDE/editor
+.idea/
+.vscode/
+*.iml
+
+# Mac
+.DS_Store
