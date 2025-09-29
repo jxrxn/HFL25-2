@@ -21,7 +21,7 @@ Projektet är en del av repo **HFL25** för en kurs på STI.
 
 ## Användning
 
-3. **Klona projektet**  
+3. **För att räkna**  
    I projektroten kör du:  
    ```bash
    dart run
