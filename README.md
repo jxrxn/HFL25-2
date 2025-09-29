@@ -14,7 +14,7 @@ dart run
 
 ## Funktioner
 
-•	Addition (+)
-•	Subtraktion (-)
-•	Multiplikation (*)
-•	Division (/), med felhantering för division med noll
+–	Addition (+)
+–	Subtraktion (-)
+–	Multiplikation (*)
+–	Division (/), med felhantering för division med noll
