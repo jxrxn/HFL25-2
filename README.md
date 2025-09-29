@@ -3,6 +3,15 @@
 Det här är en enkel kalkylator skriven i Dart som körs i terminalen.  
 **HFL25-2** är en repo för en kurs i Dart och Flutter på [STI](https://www.sti.se).
 
+
+   ## Funktioner
+
+   •	Addition (+)  
+   •	Subtraktion (-)  
+   •	Multiplikation (*)  
+   •	Division (/), med felhantering för division med noll
+
+
 ## Installation
 
 1. **Installera Dart SDK**  
@@ -40,10 +49,3 @@ Det här är en enkel kalkylator skriven i Dart som körs i terminalen.
    Vilken operation vill du göra? (+, -, *, /): *
    Resultatet är: 50
    ```
-
-   ## Funktioner
-
-   •	Addition (+)  
-   •	Subtraktion (-)  
-   •	Multiplikation (*)  
-   •	Division (/), med felhantering för division med noll
