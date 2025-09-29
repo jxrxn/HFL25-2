@@ -1,7 +1,7 @@
 # v01 – CLI Kalkylator
 
 Det här är en enkel kalkylator skriven i Dart som körs i terminalen.  
-Projektet är en del av repo **HFL25** för en kurs på STI – https://www.sti.se.
+**HFL25** är en repo för en kurs i Daret och Flutter på STI – https://www.sti.se.
 
 ## Installation
 
@@ -15,8 +15,8 @@ Projektet är en del av repo **HFL25** för en kurs på STI – https://www.sti.
 2. **Klona projektet**  
    Öppna terminalen och kör:  
    ```bash
-   git clone https://github.com/jxrxn/HFL25.git
-   cd HFL25
+   git clone https://github.com/jxrxn/HFL25-2.git
+   cd HFL25-2
    ```
 
 3. **Hämta beroenden**  
