@@ -1,7 +1,7 @@
 # v01 – CLI Kalkylator
 
 Det här är en enkel kalkylator skriven i Dart som körs i terminalen.  
-Projektet är en del av repo **HFL25** för en kurs på STI.
+Projektet är en del av repo **HFL25** för en kurs på STI – https://www.sti.se.
 
 ## Installation
 
