@@ -41,9 +41,9 @@ Projektet är en del av repo **HFL25** för en kurs på STI.
    Resultatet är: 50
    ```
 
-## Funktioner
+   ## Funktioner
 
-•	Addition (+)  
-•	Subtraktion (-)  
-•	Multiplikation (*)  
-•	Division (/), med felhantering för division med noll
+   •	Addition (+)  
+   •	Subtraktion (-)  
+   •	Multiplikation (*)  
+   •	Division (/), med felhantering för division med noll
