@@ -20,7 +20,7 @@ Det här är en enkel kalkylator skriven i Dart som körs i terminalen.
    ```
 
 3. **Hämta beroenden**  
-   I projektroten kör du:  
+   I terminalen:  
    ```bash
    dart pub get
    ```
