@@ -1,34 +1,32 @@
-name: Run Dart Tests on PR
+name: Run Dart Tests on PR (v02)
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
+    paths:
+      - "v02/**"
+      - ".github/workflows/*.yml"
 
 jobs:
   run-tests:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Extract folder name from branch
-        id: extract_folder
-        run: |
-          folder_name=$(echo "${{ github.head_ref }}" | grep -o 'v[0-9][0-9]' | head -n 1)
-          echo "folder_name=$folder_name" >> $GITHUB_OUTPUT
 
       - name: Setup Dart
         uses: dart-lang/setup-dart@v1
-        if: steps.extract_folder.outputs.folder_name != ''
         with:
-          sdk: '3.8'  
-      - name: Install dependencies
-        if: steps.extract_folder.outputs.folder_name != ''
-        working-directory: ${{ steps.extract_folder.outputs.folder_name }}
+          sdk: stable
+
+      - name: Install deps
+        working-directory: v02
         run: dart pub get
 
-      - name: Run tests
-        if: steps.extract_folder.outputs.folder_name != ''
-        working-directory: ${{ steps.extract_folder.outputs.folder_name }}
+      - name: Analyze
+        working-directory: v02
+        run: dart analyze
+
+      - name: Test
+        working-directory: v02
         run: dart test
