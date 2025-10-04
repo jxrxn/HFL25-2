@@ -11,6 +11,7 @@ on:
     paths:
       - "v02/**"
       - ".github/workflows/dart-tests.yml"
+  workflow_dispatch:
 
 jobs:
   analyze-and-test:
