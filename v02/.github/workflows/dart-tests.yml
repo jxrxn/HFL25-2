@@ -1,0 +1,38 @@
+name: Dart CI (v02)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "v02/**"
+      - ".github/workflows/dart-tests.yml"
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "v02/**"
+      - ".github/workflows/dart-tests.yml"
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Install dependencies
+        working-directory: v02
+        run: dart pub get
+
+      - name: Analyze
+        working-directory: v02
+        run: dart analyze
+
+      - name: Test
+        working-directory: v02
+        run: dart test
+
