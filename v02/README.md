@@ -15,6 +15,8 @@ Sparas automatiskt i JSON-format.
 
 ---
 
+# Gör såhär
+
 ## Gå till din GitHub-mapp (eller där du vill ha projektet)
 ```bash
 cd ~/Documents/GitHub
