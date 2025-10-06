@@ -23,4 +23,8 @@ dart pub get
 dart run bin/herodex.dart
 ```
 
-💡 Om du får meddelandet “The default interactive shell is now zsh”, skriv bara exit och kör kommandona igen — det påverkar inte programmet.
+💡 Om du får meddelandet “The default interactive shell is now zsh”, skriv bara 
+```
+exit
+```
+och kör kommandona igen — det påverkar inte programmet.
