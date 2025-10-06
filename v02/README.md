@@ -5,11 +5,11 @@ En Dart-app du kan använda i terminalen. Skapa, visa, sök och tar bort hjälta
 ---
 
 ## 🚀 Funktioner
-1 🆕 Lägg till hjälte (namn, styrka, specialkraft, kön, ursprung, alignment)
-2 📜 Visa hjältar (sorterade efter styrka)
-3 🔍 Sök efter hjältar
-4 ❌ Ta bort hjälte (via nummer eller namn)
-5 💾 Automatisk spara/ladda från `heroes.json`
+1. 🆕 Lägg till hjälte (namn, styrka, specialkraft, kön, ursprung, alignment)
+2. 📜 Visa hjältar (sorterade efter styrka)
+3. 🔍 Sök efter hjältar
+4. ❌ Ta bort hjälte (via nummer eller namn)
+5. 💾 Automatisk spara/ladda från `heroes.json`
 - 🎨 Färgade meddelanden för fel, info, varning, framgång
 
 ---
