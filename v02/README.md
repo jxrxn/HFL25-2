@@ -1,6 +1,7 @@
 # HeroDex 3000
 
-En Dart-app du kan använda i terminalen. Skapa, visa, sök och tar bort hjältar. Sparar automatiskt i JSON-format.
+En Dart-app du kan använda i terminalen. Skapa, visa, sök och ta bort hjältar.  
+Sparas automatiskt i JSON-format.
 
 ---
 
@@ -10,11 +11,11 @@ En Dart-app du kan använda i terminalen. Skapa, visa, sök och tar bort hjälta
 3. 🔍 Sök efter hjältar
 4. ❌ Ta bort hjälte (via nummer eller namn)
 5. 💾 Automatisk spara/ladda från `heroes.json`
-- 🎨 Färgade meddelanden för fel, info, varning, framgång
+- 🎨 Färgade meddelanden för info, felmeddelandeb, varning
 
 ---
 
-## 🛠️ Körning
+## 🛠️ Kör det här i terminalen
 
 ```bash
 git clone https://github.com/jxrxn/HFL25-2.git
