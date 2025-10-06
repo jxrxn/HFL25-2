@@ -1,9 +1,12 @@
 import 'dart:io';
+import 'dart:convert';
 
 /// Hjältarna lagras här
 List<Map<String, dynamic>> heroes = [];
 
 void main() {
+  loadHeroes(); // Läs in tidigare sparade hjältar om de finns
+
   bool running = true;
 
   while (running) {
@@ -11,7 +14,7 @@ void main() {
     print("1. Lägg till hjälte");
     print("2. Visa hjältar");
     print("3. Sök hjälte");
-    print("4. Avsluta");
+    print("4. Avsluta (och spara)");
     stdout.write("Välj: ");
 
     final choice = stdin.readLineSync()?.trim();
@@ -27,7 +30,8 @@ void main() {
         searchHeroes();
         break;
       case '4':
-        print("Avslutar HeroDex 3000...");
+        saveHeroes();
+        print("💾 Avslutar HeroDex 3000...");
         running = false;
         break;
       default:
@@ -60,8 +64,6 @@ void addHero() {
   final name = askString("Ange namn", defaultValue: "Okänd");
   final strength = askStrength();
   final special = askString("Ange specialkraft", defaultValue: "ingen");
-
-  // Frågor utan parentes-text:
   final gender = askString("Ange kön", defaultValue: "Unknown");
   final race   = askString("Ange ursprung", defaultValue: "Unknown");
   final align  = askString("Ange alignment (t.ex. snäll/neutral/ond)", defaultValue: "neutral");
@@ -132,5 +134,24 @@ void searchHeroes() {
       final a = h["biography"]["alignment"];
       print("- $n | styrka: $s | special: $p | gender: $g | race: $r | alignment: $a");
     }
+  }
+}
+
+/// Spara hjältar till fil (JSON)
+void saveHeroes() {
+  final file = File('heroes.json');
+  final jsonData = jsonEncode(heroes);
+  file.writeAsStringSync(jsonData);
+  print("💾 Hjältar sparade till heroes.json");
+}
+
+/// Läs in hjältar från fil (JSON)
+void loadHeroes() {
+  final file = File('heroes.json');
+  if (file.existsSync()) {
+    final contents = file.readAsStringSync();
+    final List<dynamic> data = jsonDecode(contents);
+    heroes = List<Map<String, dynamic>>.from(data);
+    print("📂 ${heroes.length} hjältar laddades in från heroes.json");
   }
 }
