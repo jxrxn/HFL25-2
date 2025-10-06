@@ -6,11 +6,11 @@ Sparas automatiskt i JSON-format.
 ---
 
 ## ⚙️ Funktioner
-1. 🆕 Lägg till hjälte (namn, styrka, specialkraft, kön, ursprung, alignment)
-2. 📜 Visa hjältar (sorterade efter styrka)
-3. 🔍 Sök efter hjältar
-4. ❌ Ta bort hjälte (via nummer eller namn)
-5. 💾 Automatisk spara/ladda från `heroes.json`
+1. Lägg till hjälte (namn, styrka, specialkraft, kön, ursprung, alignment)
+2. Visa hjältar (sorterade efter styrka)
+3. Sök efter hjältar
+4. Ta bort hjälte (via nummer eller namn)
+5. Automatisk spara/ladda från `heroes.json`
 
 👉 Färgade meddelanden för info, felmeddelande, varningar
 
