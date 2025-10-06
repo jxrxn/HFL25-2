@@ -15,37 +15,27 @@ Sparas automatiskt i JSON-format.
 
 ---
 
-## 🛠️ Kör det här i terminalen
-
-```bash
-git clone https://github.com/jxrxn/HFL25-2.git
-cd HFL25-2/v02
-dart pub get
-dart run bin/herodex.dart
-```
-
-
-# Gå till din GitHub-mapp (eller där du vill ha projektet)
+## Gå till din GitHub-mapp (eller där du vill ha projektet)
 ```bash
 cd ~/Documents/GitHub
 ```
 
-# Klona projektet (skapar mappen HFL25-2)
+## Klona projektet (skapar mappen HFL25-2)
 ```bash
 git clone https://github.com/jxrxn/HFL25-2.git
 ```
 
-# Gå in i version 02
+## Gå in i version 02
 ```bash
 cd HFL25-2/v02
 ```
 
-# Hämta paket
+## Hämta paket
 ```bash
 dart pub get
 ```
 
-# Kör programmet
+## Kör programmet
 ```bash
 dart run bin/herodex.dart
 ```
