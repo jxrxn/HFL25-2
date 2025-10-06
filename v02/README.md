@@ -5,13 +5,13 @@ Sparas automatiskt i JSON-format.
 
 ---
 
-## 🚀 Funktioner
+## Funktioner
 1. 🆕 Lägg till hjälte (namn, styrka, specialkraft, kön, ursprung, alignment)
 2. 📜 Visa hjältar (sorterade efter styrka)
 3. 🔍 Sök efter hjältar
 4. ❌ Ta bort hjälte (via nummer eller namn)
 5. 💾 Automatisk spara/ladda från `heroes.json`
-- 🎨 Färgade meddelanden för info, felmeddelandeb, varning
+- 💡 Färgade meddelanden för info, felmeddelandeb, varning
 
 ---
 
@@ -24,8 +24,30 @@ dart pub get
 dart run bin/herodex.dart
 ```
 
-💡 Om du får meddelandet “The default interactive shell is now zsh”, skriv bara 
+
+# Gå till din GitHub-mapp (eller där du vill ha projektet)
+```bash
+cd ~/Documents/GitHub
 ```
-exit
+
+# Klona projektet (skapar mappen HFL25-2)
+```bash
+git clone https://github.com/jxrxn/HFL25-2.git
 ```
-och kör kommandona igen — det påverkar inte programmet.
+
+# Gå in i version 02
+```bash
+cd HFL25-2/v02
+```
+
+# Hämta paket
+```bash
+dart pub get
+```
+
+# Kör programmet
+```bash
+dart run bin/herodex.dart
+```
+
+
