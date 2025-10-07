@@ -12,7 +12,7 @@ Sparas automatiskt i JSON-format.
 4. Ta bort hjälte (via nummer eller namn)
 5. Automatisk spara/ladda från `heroes.json`
 
-👉 Färgade meddelanden för info, felmeddelande, varningar
+👉 Färgade meddelanden för info, felmeddelanden och varningar
 
 ---
 
