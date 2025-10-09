@@ -20,6 +20,7 @@ jobs:
       matrix:
         sdk: [3.9.2, stable, beta]
     name: Dart ${{ matrix.sdk }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,7 +30,13 @@ jobs:
         with:
           sdk: ${{ matrix.sdk }}
 
-      - name: Install dependencies
+      # ---- Clean build (säkerställer att inga gamla caches spökar) ----
+      - name: Clean workspace (remove caches)
+        working-directory: v03
+        run: |
+          rm -rf .dart_tool build || true
+
+      - name: Get dependencies
         working-directory: v03
         run: dart pub get
 
