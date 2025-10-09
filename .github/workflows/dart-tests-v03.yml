@@ -1,0 +1,42 @@
+name: Dart CI (v03)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "v03/**"
+      - ".github/workflows/dart-tests-v03.yml"
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "v03/**"
+      - ".github/workflows/dart-tests-v03.yml"
+  workflow_dispatch:
+
+jobs:
+  analyze-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sdk: [3.9.2, stable, beta]
+    name: Dart ${{ matrix.sdk }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ matrix.sdk }}
+
+      - name: Install dependencies
+        working-directory: v03
+        run: dart pub get
+
+      - name: Analyze
+        working-directory: v03
+        run: dart analyze
+
+      - name: Test
+        working-directory: v03
+        run: dart test
