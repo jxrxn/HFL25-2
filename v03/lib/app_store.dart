@@ -1,6 +1,6 @@
 import 'package:meta/meta.dart';
-import 'package:v03/managers/hero_data_managing.dart';
 import 'package:v03/managers/hero_data_manager.dart';
+import 'package:v03/managers/hero_data_managing.dart';
 
 /// Globalt datalager för appen (kan ersättas i tester)
 HeroDataManaging _store = HeroDataManager();
