@@ -4,7 +4,8 @@ import 'package:v03/managers/hero_data_manager.dart';
 import 'package:v03/managers/hero_data_managing.dart';
 import 'package:v03/models/hero_model.dart';
 
-final HeroDataManaging store = HeroDataManager(); // Singleton
+/// Globalt (sätts i main baserat på argument)
+late HeroDataManaging store;
 
 /// ====== Färger (ANSI) ======
 const String red = '\x1B[31m';
@@ -18,29 +19,31 @@ void printSuccess(String msg) => print("$green$msg$reset");
 void printInfo(String msg) => print("$cyan$msg$reset");
 void printWarn(String msg) => print("$yellow$msg$reset");
 
-/// ====== Hjälpfunktioner ======
+/// ====== Start & argument ======
+/// - `dart run bin/herodex.dart`                → skarpt läge (heroes.json)
+/// - `dart run bin/herodex.dart --mock`         → mock-läge (test/mock_heroes.json)
+/// - `dart run bin/herodex.dart --data=PATH`    → använd valfri fil
+Future<void> main(List<String> args) async {
+  final isMock = args.contains('--mock');
+  final dataPathArg = args.firstWhere(
+    (a) => a.startsWith('--data='),
+    orElse: () => '',
+  );
 
-String askString(String prompt, {required String defaultValue}) {
-  stdout.write("$prompt: ");
-  final v = stdin.readLineSync()?.trim();
-  if (v == null || v.isEmpty) return defaultValue;
-  return v;
-}
+  final dataFile = dataPathArg.isNotEmpty
+      ? dataPathArg.split('=').last
+      : (isMock ? 'test/mock_heroes.json' : 'heroes.json');
 
-int askStrength() {
-  while (true) {
-    stdout.write("Ange styrka (1–1000): ");
-    final input = stdin.readLineSync()?.trim();
-    final value = int.tryParse(input ?? '');
-    if (value != null && value >= 1 && value <= 1000) return value;
-    printError("⚠️  Ogiltig styrka. Ange ett heltal mellan 1 och 1000.");
-  }
-}
+  // Initiera store: om datafilen är specificerad/mock → test-konstruktorn,
+  // annars singletonen (produktion).
+  store = (isMock || dataPathArg.isNotEmpty)
+      ? HeroDataManager.internalForTesting(dataFile)
+      : HeroDataManager();
 
-/// ====== Huvudprogram ======
+  printInfo("🗂  Använder datafil: $dataFile");
 
-Future<void> main() async {
-  await store.getHeroList(); // Initiera (lazy load i manager)
+  // Ladda ev. befintliga hjältar
+  await store.getHeroList();
 
   var running = true;
   while (running) {
@@ -73,6 +76,24 @@ Future<void> main() async {
       default:
         printError("⚠️  Ogiltigt val, försök igen.");
     }
+  }
+}
+
+/// ====== Hjälpfunktioner (input) ======
+String askString(String prompt, {required String defaultValue}) {
+  stdout.write("$prompt: ");
+  final v = stdin.readLineSync()?.trim();
+  if (v == null || v.isEmpty) return defaultValue;
+  return v;
+}
+
+int askStrength() {
+  while (true) {
+    stdout.write("Ange styrka (1–1000): ");
+    final input = stdin.readLineSync()?.trim();
+    final value = int.tryParse(input ?? '');
+    if (value != null && value >= 1 && value <= 1000) return value;
+    printError("⚠️  Ogiltig styrka. Ange ett heltal mellan 1 och 1000.");
   }
 }
 
@@ -203,7 +224,7 @@ Future<void> deleteHero() async {
     return;
   }
 
-  final ok = await HeroDataManager().deleteHeroById(toRemove.id);
+  final ok = await store.deleteHeroById(toRemove.id);
   if (ok) {
     printSuccess("🗑️  '${toRemove.name}' borttagen.");
   } else {
