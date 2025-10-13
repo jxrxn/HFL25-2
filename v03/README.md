@@ -46,6 +46,18 @@ dart pub get
 dart run bin/herodex.dart
 ```
 
+
+## 🧪 Olika lägen
+
+Du kan nu starta HeroDex i tre olika lägen:
+
+| Läge | Kommando | Beskrivning |
+|------|-----------|-------------|
+| **Standardläge** | `dart run bin/herodex.dart` | Läser och sparar hjältar i `heroes.json` |
+| **Mockläge** | `dart run bin/herodex.dart --mock` | Startar med tre filosofer (Platon, Aristoteles, Epiktetos) för test |
+| **Egen datafil** | `dart run bin/herodex.dart --data=custom.json` | Använder en specifik JSON-fil för lagring |
+
+
 ##  ✅ Tester
 
 Projektet innehåller enhetstester i test/:  
