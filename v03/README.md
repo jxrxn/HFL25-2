@@ -62,6 +62,7 @@ Du kan nu starta HeroDex i tre olika lägen:
 
 Projektet innehåller enhetstester i test/:  
 	•	hero_data_manager_test.dart  
+	•	hero_data_manager_mock_test.dart  
 	•	hero_model_test.dart  
 	•	class_abstract_test.dart  
 
