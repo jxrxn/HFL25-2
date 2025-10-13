@@ -48,7 +48,7 @@ dart run bin/herodex.dart
 
 ##  ✅ Tester
 
-Projektet innehåller enhetstester i 'test/':
+Projektet innehåller enhetstester i test/:  
 	•	hero_data_manager_test.dart  
 	•	hero_model_test.dart  
 	•	class_abstract_test.dart  
