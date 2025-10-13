@@ -12,10 +12,10 @@ Sparas automatiskt i JSON-format.
 4. Ta bort hjälte (via nummer eller namn)
 5. Automatisk spara/ladda från `heroes.json`
 
-•	 Singleton (HeroDataManager.instance) säkerställer en enda global instans.  
-•	 Abstrakt interface (HeroDataManaging) gör det lätt att byta ut lagring (t.ex. fil, API, moln).  
-•  JSON-persistens via dart:io och dart:convert.  
-•	 Färgade meddelanden för info, felmeddelanden och varningar.  
+  •	 Singleton (HeroDataManager.instance) säkerställer en enda global instans.  
+  •	 Abstrakt interface (HeroDataManaging) gör det lätt att byta ut lagring (t.ex. fil, API, moln).  
+  •  JSON-persistens via dart:io och dart:convert.  
+  •	 Färgade meddelanden för info, felmeddelanden och varningar.  
 
 ---
 
@@ -46,4 +46,14 @@ dart pub get
 dart run bin/herodex.dart
 ```
 
+##  ✅ Tester
 
+Projektet innehåller enhetstester i 'test/':
+	•	hero_data_manager_test.dart  
+	•	hero_model_test.dart  
+	•	class_abstract_test.dart  
+
+Kör alla tester:
+```bash
+dart test
+```
