@@ -1,0 +1,44 @@
+[
+  {
+    "id": "P01",
+    "name": "Platon",
+    "powerstats": { "strength": "42", "intelligence": "99" },
+    "biography": {
+      "full-name": "Plato of Athens",
+      "alignment": "good",
+      "origin": "Athens, Greece"
+    },
+    "appearance": { "gender": "Male", "race": "Human" },
+    "work": { "occupation": "Philosopher, Founder of the Academy" },
+    "connections": { "group-affiliation": "The Academy" },
+    "image": { "url": "https://example.com/plato.jpg" }
+  },
+  {
+    "id": "A02",
+    "name": "Aristoteles",
+    "powerstats": { "strength": "50", "intelligence": "100" },
+    "biography": {
+      "full-name": "Aristotle of Stagira",
+      "alignment": "neutral good",
+      "origin": "Stagira, Macedonia"
+    },
+    "appearance": { "gender": "Male", "race": "Human" },
+    "work": { "occupation": "Philosopher, Scientist, Teacher" },
+    "connections": { "group-affiliation": "Lyceum" },
+    "image": { "url": "https://example.com/aristotle.jpg" }
+  },
+  {
+    "id": "E03",
+    "name": "Epictetus",
+    "powerstats": { "strength": "38", "intelligence": "95" },
+    "biography": {
+      "full-name": "Epictetus of Hierapolis",
+      "alignment": "lawful good",
+      "origin": "Hierapolis, Phrygia"
+    },
+    "appearance": { "gender": "Male", "race": "Human" },
+    "work": { "occupation": "Stoic Philosopher, Teacher" },
+    "connections": { "group-affiliation": "The Stoics" },
+    "image": { "url": "https://example.com/epictetus.jpg" }
+  }
+]
