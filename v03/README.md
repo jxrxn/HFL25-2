@@ -12,7 +12,10 @@ Sparas automatiskt i JSON-format.
 4. Ta bort hjälte (via nummer eller namn)
 5. Automatisk spara/ladda från `heroes.json`
 
-👉 Färgade meddelanden för info, felmeddelanden och varningar
+•	 Singleton (HeroDataManager.instance) säkerställer en enda global instans.
+•	 Abstrakt interface (HeroDataManaging) gör det lätt att byta ut lagring (t.ex. fil, API, moln).
+•  JSON-persistens via dart:io och dart:convert.
+•	 Färgade meddelanden för info, felmeddelanden och varningar
 
 ---
 
@@ -30,7 +33,7 @@ git clone https://github.com/jxrxn/HFL25-2.git
 
 ### Gå in i version 02
 ```bash
-cd HFL25-2/v02
+cd HFL25-2/v03
 ```
 
 ### Hämta paket
