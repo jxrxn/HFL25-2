@@ -1,11 +1,14 @@
 import 'dart:io';
 
+import 'package:uuid/uuid.dart';
 import 'package:v03/managers/hero_data_manager.dart';
 import 'package:v03/managers/hero_data_managing.dart';
 import 'package:v03/models/hero_model.dart';
 
-/// Globalt (sätts i main baserat på argument)
+// ====== Globala instanser ======
+// Endast EN deklaration av store. Vi initierar den i main() beroende på args.
 late HeroDataManaging store;
+final _uuid = Uuid(); // För att skapa unika ID:n
 
 /// ====== Färger (ANSI) ======
 const String red = '\x1B[31m';
@@ -98,7 +101,6 @@ int askStrength() {
 }
 
 /// ====== Funktioner ======
-
 Future<void> addHero() async {
   final name = askString("Ange hjältenamn (alias)", defaultValue: "Okänd");
   final realName = askString("Ange riktigt namn (valfritt)", defaultValue: "");
@@ -111,8 +113,9 @@ Future<void> addHero() async {
     defaultValue: "neutral",
   );
 
+  // 🔑 Skapa unikt UUID istället för timestamp
   final hero = HeroModel(
-    id: DateTime.now().microsecondsSinceEpoch.toString(),
+    id: _uuid.v4(), // Ex: "550e8400-e29b-41d4-a716-446655440000"
     name: name,
     powerstats: {"strength": strength},
     appearance: {"gender": gender, "race": origin},
