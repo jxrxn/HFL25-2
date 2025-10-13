@@ -1,5 +1,9 @@
 import 'dart:io';
-import 'dart:convert';
+import 'package:v03/models/hero_model.dart';
+import 'package:v03/managers/hero_data_managing.dart';
+import 'package:v03/managers/hero_data_manager.dart';
+
+final HeroDataManaging store = HeroDataManager(); // Singleton
 
 /// ====== Färger (ANSI) ======
 const String red = '\x1B[31m';
@@ -13,51 +17,8 @@ void printSuccess(String msg) => print("$green$msg$reset");
 void printInfo(String msg) => print("$cyan$msg$reset");
 void printWarn(String msg) => print("$yellow$msg$reset");
 
-/// ====== Data ======
-List<Map<String, dynamic>> heroes = [];
-const saveFile = 'heroes.json';
+/// ====== Hjälpfunktioner ======
 
-void main() {
-  loadHeroes(); // Läs in tidigare sparade hjältar
-
-  bool running = true;
-  while (running) {
-    printInfo("\n=== HeroDex 3000 ===");
-    print("1. Lägg till hjälte");
-    print("2. Visa hjältar");
-    print("3. Sök hjälte");
-    print("4. Ta bort hjälte");
-    print("5. Avsluta (och spara)");
-    stdout.write("Välj: ");
-
-    final choice = stdin.readLineSync()?.trim();
-
-    switch (choice) {
-      case '1':
-        addHero();
-        saveHeroes();
-        break;
-      case '2':
-        showHeroes();
-        break;
-      case '3':
-        searchHeroes();
-        break;
-      case '4':
-        deleteHero();
-        break;
-      case '5':
-        saveHeroes();
-        printSuccess("💾 Avslutar HeroDex 3000...");
-        running = false;
-        break;
-      default:
-        printError("⚠️  Ogiltigt val, försök igen.");
-    }
-  }
-}
-
-/// Hjälpfunktion: fråga med möjlighet till default (utan att skriva ut den)
 String askString(String prompt, {required String defaultValue}) {
   stdout.write("$prompt: ");
   final v = stdin.readLineSync()?.trim();
@@ -65,7 +26,6 @@ String askString(String prompt, {required String defaultValue}) {
   return v;
 }
 
-/// Hjälpfunktion: fråga efter styrka med gräns 1–1000
 int askStrength() {
   while (true) {
     stdout.write("Ange styrka (1–1000): ");
@@ -76,161 +36,176 @@ int askStrength() {
   }
 }
 
-/// Lägg till en hjälte
-void addHero() {
-  final name = askString("Ange namn", defaultValue: "Okänd");
-  final strength = askStrength();
-  final special = askString("Ange specialkraft", defaultValue: "ingen");
-  final gender = askString("Ange kön", defaultValue: "Unknown");
-  final origin = askString("Ange ursprung", defaultValue: "Unknown");
-  final align  = askString("Ange alignment (t.ex. snäll/neutral/ond)", defaultValue: "neutral");
+/// ====== Huvudprogram ======
 
-  final hero = {
-    "name": name,
-    "powerstats": {"strength": strength},
-    "appearance": {"gender": gender, "race": origin},
-    "biography": {"alignment": align},
-    "special": special,
-  };
+Future<void> main() async {
+  await store.getHeroList(); // Initiera (lazy load i manager)
 
-  heroes.add(hero);
-  printSuccess("✅ ${hero["name"]} tillagd!");
+  var running = true;
+  while (running) {
+    printInfo("\n=== HeroDex 3000 ===");
+    print("1. Lägg till hjälte");
+    print("2. Visa hjältar");
+    print("3. Sök hjälte");
+    print("4. Ta bort hjälte");
+    print("5. Avsluta");
+    stdout.write("Välj: ");
+
+    final choice = stdin.readLineSync()?.trim();
+    switch (choice) {
+      case '1':
+        await addHero();
+        break;
+      case '2':
+        await showHeroes();
+        break;
+      case '3':
+        await searchHeroes();
+        break;
+      case '4':
+        await deleteHero();
+        break;
+      case '5':
+        printSuccess("💾 Avslutar HeroDex 3000...");
+        running = false;
+        break;
+      default:
+        printError("⚠️  Ogiltigt val, försök igen.");
+    }
+  }
 }
 
-/// Visa alla hjältar sorterade efter styrka
-void showHeroes() {
+/// ====== Funktioner ======
+
+Future<void> addHero() async {
+  final name = askString("Ange hjältenamn (alias)", defaultValue: "Okänd");
+  final realName = askString("Ange riktigt namn (valfritt)", defaultValue: "");
+  final strength = askStrength();
+  final special = askString("Ange specialkraft", defaultValue: "ingen");
+  final gender = askString("Ange kön", defaultValue: "Okänt");
+  final origin = askString("Ange ursprung/ras", defaultValue: "Okänt");
+  final align = askString(
+    "Ange alignment (t.ex. snäll/neutral/ond)",
+    defaultValue: "neutral",
+  );
+
+  final hero = HeroModel(
+    id: DateTime.now().microsecondsSinceEpoch.toString(),
+    name: name,
+    powerstats: {"strength": strength},
+    appearance: {"gender": gender, "race": origin},
+    biography: {
+      "alignment": align,
+      if (realName.isNotEmpty) "full-name": realName,
+    },
+    work: {"occupation": special},
+  );
+
+  await store.saveHero(hero);
+  printSuccess("✅ ${hero.name} tillagd!");
+}
+
+Future<void> showHeroes() async {
+  final heroes = await store.getHeroList();
   if (heroes.isEmpty) {
     printWarn("Inga hjältar tillagda ännu.");
     return;
   }
 
-  final sorted = [...heroes];
-  sorted.sort((a, b) =>
-      (b["powerstats"]["strength"] as int).compareTo(a["powerstats"]["strength"] as int));
+  final sorted = [...heroes]
+    ..sort((a, b) {
+      final as = int.tryParse('${a.powerstats?['strength'] ?? 0}') ?? 0;
+      final bs = int.tryParse('${b.powerstats?['strength'] ?? 0}') ?? 0;
+      return bs.compareTo(as);
+    });
 
   printInfo("\n=== Hjältar (starkast först) ===");
   for (final h in sorted) {
-    final n = h["name"];
-    final s = h["powerstats"]["strength"];
-    final p = h["special"];
-    final g = h["appearance"]["gender"];
-    final r = h["appearance"]["race"];
-    final a = h["biography"]["alignment"];
-    print("- $n | styrka: $s | special: $p | kön: $g | ursprung: $r | alignment: $a");
+    print(h.toString());
   }
 }
 
-/// Sök efter hjälte
-void searchHeroes() {
+Future<void> searchHeroes() async {
+  final heroes = await store.getHeroList();
   if (heroes.isEmpty) {
     printWarn("Inga hjältar att söka i.");
     return;
   }
 
   stdout.write("Ange sökterm (namn): ");
-  final query = stdin.readLineSync()?.trim().toLowerCase() ?? '';
+  final query = stdin.readLineSync()?.trim() ?? '';
   if (query.isEmpty) {
     printWarn("Tom sökterm.");
     return;
   }
 
-  final results = heroes.where(
-    (h) => (h["name"] as String).toLowerCase().contains(query),
-  );
-
+  final results = await store.searchHero(query);
   if (results.isEmpty) {
     printError("❌ Inga matchande hjältar hittades.");
   } else {
     printInfo("\n=== Sökresultat ===");
     for (final h in results) {
-      final n = h["name"];
-      final s = h["powerstats"]["strength"];
-      final p = h["special"];
-      final g = h["appearance"]["gender"];
-      final r = h["appearance"]["race"];
-      final a = h["biography"]["alignment"];
-      print("- $n | styrka: $s | special: $p | kön: $g | ursprung: $r | alignment: $a");
+      print(h.toString());
     }
   }
 }
 
-/// Ta bort hjälte (via nummer i sorterad lista eller exakt namn)
-void deleteHero() {
+Future<void> deleteHero() async {
+  final heroes = await store.getHeroList();
   if (heroes.isEmpty) {
     printWarn("Det finns inga hjältar att ta bort.");
     return;
   }
 
-  // Visa numrerad lista (starkast först)
-  final sorted = [...heroes];
-  sorted.sort((a, b) =>
-      (b["powerstats"]["strength"] as int).compareTo(a["powerstats"]["strength"] as int));
+  final sorted = [...heroes]
+    ..sort((a, b) {
+      final as = int.tryParse('${a.powerstats?['strength'] ?? 0}') ?? 0;
+      final bs = int.tryParse('${b.powerstats?['strength'] ?? 0}') ?? 0;
+      return bs.compareTo(as);
+    });
 
   printInfo("\n=== Ta bort hjälte ===");
   for (var i = 0; i < sorted.length; i++) {
-    final h = sorted[i];
-    final n = h["name"];
-    final s = h["powerstats"]["strength"];
-    print("${i + 1}. $n (styrka: $s)");
+    final s = int.tryParse('${sorted[i].powerstats?['strength'] ?? 0}') ?? 0;
+    print("${i + 1}. ${sorted[i].name} (styrka: $s)");
   }
 
-  stdout.write("Ange nummer att ta bort (eller skriv exakt namn, tomt för avbryt): ");
+  stdout.write(
+    "Ange nummer att ta bort (eller skriv exakt namn, tomt för avbryt): ",
+  );
   final input = stdin.readLineSync()?.trim() ?? '';
-
   if (input.isEmpty) {
     printWarn("Avbrutet.");
     return;
   }
 
-  Map<String, dynamic>? toRemove;
-
-  // Försök tolka som index
+  HeroModel? toRemove;
   final idx = int.tryParse(input);
   if (idx != null && idx >= 1 && idx <= sorted.length) {
     toRemove = sorted[idx - 1];
   } else {
-    // Matcha på exakt namn (case-insensitivt)
     final lower = input.toLowerCase();
-    toRemove = sorted.firstWhere(
-      (h) => (h["name"] as String).toLowerCase() == lower,
-      orElse: () => {},
-    );
-    if (toRemove.isEmpty) {
+    final matchIndex = sorted.indexWhere((h) => h.name.toLowerCase() == lower);
+    if (matchIndex == -1) {
       printError("❌ Hittade ingen hjälte med det numret/namnet.");
       return;
     }
+    toRemove = sorted[matchIndex];
   }
 
-  final name = toRemove["name"] as String;
-  stdout.write("Är du säker på att du vill ta bort '$name'? (j/N): ");
+  stdout.write(
+    "Är du säker på att du vill ta bort '${toRemove.name}'? (j/N): ",
+  );
   final confirm = stdin.readLineSync()?.trim().toLowerCase();
   if (confirm != 'j' && confirm != 'ja' && confirm != 'y' && confirm != 'yes') {
     printWarn("Avbrutet.");
     return;
   }
 
-  final removed = heroes.remove(toRemove);
-  if (removed) {
-    saveHeroes();
-    printSuccess("🗑️  '$name' borttagen.");
+  final ok = await HeroDataManager().deleteHeroById(toRemove.id);
+  if (ok) {
+    printSuccess("🗑️  '${toRemove.name}' borttagen.");
   } else {
-    printError("❌ Kunde inte ta bort '$name'. (Okänt fel.)");
-  }
-}
-
-/// Spara hjältar till fil (JSON)
-void saveHeroes() {
-  final file = File(saveFile);
-  final jsonData = jsonEncode(heroes);
-  file.writeAsStringSync(jsonData, mode: FileMode.write);
-}
-
-/// Läs in hjältar från fil (JSON)
-void loadHeroes() {
-  final file = File(saveFile);
-  if (file.existsSync()) {
-    final contents = file.readAsStringSync();
-    final List<dynamic> data = jsonDecode(contents);
-    heroes = List<Map<String, dynamic>>.from(data);
+    printError("❌ Kunde inte ta bort '${toRemove.name}'.");
   }
 }
