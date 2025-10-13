@@ -1,7 +1,8 @@
 import 'dart:io';
+
 import 'package:test/test.dart';
-import 'package:v03/models/hero_model.dart';
 import 'package:v03/managers/hero_data_manager.dart';
+import 'package:v03/models/hero_model.dart';
 
 void main() {
   group('HeroDataManager', () {
