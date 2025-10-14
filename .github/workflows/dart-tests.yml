@@ -1,15 +1,17 @@
-name: Dart CI (v02)
+name: Dart CI (v02 & v03)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, ci/**, feature/** ]
     paths:
       - "v02/**"
+      - "v03/**"
       - ".github/workflows/dart-tests.yml"
   pull_request:
     branches: [ main ]
     paths:
       - "v02/**"
+      - "v03/**"
       - ".github/workflows/dart-tests.yml"
   workflow_dispatch:
 
@@ -18,7 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        folder: [v02, v03]
+        # Kör bara stable för att hålla PR-checks gröna och snabba
+        sdk: [stable]
+        pkg: [v02, v03]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,16 +30,16 @@ jobs:
       - name: Setup Dart
         uses: dart-lang/setup-dart@v1
         with:
-          sdk: stable
+          sdk: ${{ matrix.sdk }}
 
       - name: Install dependencies
-        working-directory: ${{ matrix.folder }}
+        working-directory: ${{ matrix.pkg }}
         run: dart pub get
 
       - name: Analyze
-        working-directory: ${{ matrix.folder }}
+        working-directory: ${{ matrix.pkg }}
         run: dart analyze
 
       - name: Test
-        working-directory: ${{ matrix.folder }}
+        working-directory: ${{ matrix.pkg }}
         run: dart test
