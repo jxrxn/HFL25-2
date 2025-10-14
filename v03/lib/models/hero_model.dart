@@ -1,8 +1,9 @@
+// lib/models/hero_model.dart
+
 class HeroModel {
   final String id;
   final String name;
 
-  /// Dessa är frivilliga (kan saknas i JSON)
   final Map<String, dynamic>? powerstats;
   final Map<String, dynamic>? biography;
   final Map<String, dynamic>? appearance;
@@ -10,7 +11,6 @@ class HeroModel {
   final Map<String, dynamic>? connections;
   final Map<String, dynamic>? image;
 
-  /// Konstruktor
   HeroModel({
     required this.id,
     required this.name,
@@ -22,7 +22,6 @@ class HeroModel {
     this.image,
   });
 
-  /// Skapa en hjälte från JSON-data
   factory HeroModel.fromJson(Map<String, dynamic> json) {
     return HeroModel(
       id: json['id']?.toString() ?? '',
@@ -36,7 +35,6 @@ class HeroModel {
     );
   }
 
-  /// Gör om till JSON (för att spara till fil)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -50,12 +48,29 @@ class HeroModel {
     };
   }
 
-  /// För debug / utskrift i terminalen
-  @override
-  String toString() {
+  // Hjälpare: tolka styrka robust (kan vara int/str/null).
+  int get strengthAsInt => int.tryParse('${powerstats?['strength'] ?? 0}') ?? 0;
+
+  // Valfri kompakt representation
+  String toShortString() {
     final fullName = biography?['full-name'] ?? 'Okänt';
     final gender = appearance?['gender'] ?? 'Okänt';
     final strength = powerstats?['strength'] ?? '?';
     return '$name ($fullName) | styrka: $strength | kön: $gender';
   }
+
+  // Mer informativ visning (det du vill se i listan)
+  String toPrettyString() {
+    final fullName = biography?['full-name'] ?? 'Okänt';
+    final gender = appearance?['gender'] ?? 'Okänt';
+    final race = appearance?['race'] ?? 'Okänt';
+    final strength = powerstats?['strength'] ?? '?';
+    final alignment = biography?['alignment'] ?? 'okänd';
+    final special = work?['occupation'] ?? 'ingen';
+    return '$name ($fullName) | styrka: $strength | kön: $gender | '
+        'ursprung: $race | alignment: $alignment | special: $special';
+  }
+
+  @override
+  String toString() => toPrettyString();
 }
