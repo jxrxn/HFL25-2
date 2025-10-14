@@ -221,7 +221,7 @@ Future<void> deleteHero() async {
     return;
   }
 
-  final ok = await store.deleteHeroById(toRemove!.id);
+  final ok = await store.deleteHeroById(toRemove.id);
   if (ok) {
     printSuccess("🗑️  '${toRemove.name}' borttagen.");
   } else {
