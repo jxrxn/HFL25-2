@@ -1,14 +1,11 @@
 import 'dart:io';
 
 import 'package:uuid/uuid.dart';
-import 'package:v03/managers/hero_data_manager.dart';
-import 'package:v03/managers/hero_data_managing.dart';
+import 'package:v03/app_store.dart'; // ✅ använd central store/init
 import 'package:v03/models/hero_model.dart';
 
-// ====== Globala instanser ======
-// Endast EN deklaration av store. Vi initierar den i main() beroende på args.
-late HeroDataManaging store;
-final _uuid = Uuid(); // För att skapa unika ID:n
+// Endast lokala hjälpare här
+final _uuid = Uuid(); // Skapar unika UUID v4 för hjälte-ID:n
 
 /// ====== Färger (ANSI) ======
 const String red = '\x1B[31m';
@@ -23,27 +20,25 @@ void printInfo(String msg) => print("$cyan$msg$reset");
 void printWarn(String msg) => print("$yellow$msg$reset");
 
 /// ====== Start & argument ======
-/// - `dart run bin/herodex.dart`                → skarpt läge (heroes.json)
-/// - `dart run bin/herodex.dart --mock`         → mock-läge (test/mock_heroes.json)
-/// - `dart run bin/herodex.dart --data=PATH`    → använd valfri fil
+/// - `dart run bin/herodex.dart`                → skarpt läge (standardstore → heroes.json)
+/// - `dart run bin/herodex.dart --mock`         → mock-läge   (test/mock_heroes.json)
+/// - `dart run bin/herodex.dart --data=PATH`    → använd valfri fil (vinner över --mock)
 Future<void> main(List<String> args) async {
   final isMock = args.contains('--mock');
-  final dataPathArg = args.firstWhere(
+  final dataArg = args.firstWhere(
     (a) => a.startsWith('--data='),
     orElse: () => '',
   );
 
-  final dataFile = dataPathArg.isNotEmpty
-      ? dataPathArg.split('=').last
-      : (isMock ? 'test/mock_heroes.json' : 'heroes.json');
+  // Prioritet: --data=... vinner → annars --mock → annars null (standard)
+  final String? dataFile = dataArg.isNotEmpty
+      ? dataArg.split('=').last
+      : (isMock ? 'test/mock_heroes.json' : null);
 
-  // Initiera store: om datafilen är specificerad/mock → test-konstruktorn,
-  // annars singletonen (produktion).
-  store = (isMock || dataPathArg.isNotEmpty)
-      ? HeroDataManager.internalForTesting(dataFile)
-      : HeroDataManager();
+  // ✅ Initiera ‘store’ via app_store.dart
+  initStore(dataFile: dataFile);
 
-  printInfo("🗂  Använder datafil: $dataFile");
+  printInfo("🗂  Använder datafil: ${dataFile ?? 'heroes.json (standard)'}");
 
   // Ladda ev. befintliga hjältar
   await store.getHeroList();
@@ -113,9 +108,8 @@ Future<void> addHero() async {
     defaultValue: "neutral",
   );
 
-  // 🔑 Skapa unikt UUID istället för timestamp
   final hero = HeroModel(
-    id: _uuid.v4(), // Ex: "550e8400-e29b-41d4-a716-446655440000"
+    id: _uuid.v4(), // t.ex. "550e8400-e29b-41d4-a716-446655440000"
     name: name,
     powerstats: {"strength": strength},
     appearance: {"gender": gender, "race": origin},
