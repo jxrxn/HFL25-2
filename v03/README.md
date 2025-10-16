@@ -12,11 +12,11 @@ Sparas automatiskt i JSON-format.
 4. Ta bort hjälte (via nummer eller namn)
 5. Automatisk spara/ladda från `heroes.json`
 
-• Singleton (via get_it) säkerställer en enda global instans av HeroDataManager.
-• Abstrakt interface (HeroDataManaging) gör det lätt att byta ut implementationen (t.ex. mot test/mock eller API).
-• JSON-persistens via dart:io och dart:convert.
-• Färgade meddelanden för info, fel och varningar.
-• Varje hjälte får ett globalt unikt ID (UUID v4) genererat med paketet uuid.
+• Singleton (via get_it) säkerställer en enda global instans av HeroDataManager.  
+• Abstrakt interface (HeroDataManaging) gör det lätt att byta ut implementationen (t.ex. mot test/mock eller API).  
+• JSON-persistens via dart:io och dart:convert.  
+• Färgade meddelanden för info, fel och varningar.  
+• Varje hjälte får ett globalt unikt ID (UUID v4) genererat med paketet uuid.  
 
 ---
 
