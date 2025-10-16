@@ -1,11 +1,10 @@
 import 'dart:io';
 
 import 'package:uuid/uuid.dart';
-import 'package:v03/app_store.dart'; // ✅ använd central store/init
+import 'package:v03/app_store.dart';
 import 'package:v03/models/hero_model.dart';
 
-// Endast lokala hjälpare här
-final _uuid = Uuid(); // Skapar unika UUID v4 för hjälte-ID:n
+final _uuid = Uuid();
 
 /// ====== Färger (ANSI) ======
 const String red = '\x1B[31m';
@@ -30,15 +29,15 @@ Future<void> main(List<String> args) async {
     orElse: () => '',
   );
 
-  // Prioritet: --data=... vinner → annars --mock → annars null (standard)
+  // Prioritet: --data=... vinner → annars --mock → annars standard (null ⇒ heroes.json)
   final String? dataFile = dataArg.isNotEmpty
       ? dataArg.split('=').last
       : (isMock ? 'test/mock_heroes.json' : null);
 
-  // ✅ Initiera ‘store’ via app_store.dart
+  // ✅ Registrera rätt store i GetIt (via app_store.dart)
   initStore(dataFile: dataFile);
 
-  printInfo("🗂  Använder datafil: ${dataFile ?? 'heroes.json (standard)'}");
+  print("\x1B[36m🗂  Använder datafil: ${dataFile ?? 'heroes.json (standard)'}\x1B[0m");
 
   // Ladda ev. befintliga hjältar
   await store.getHeroList();
