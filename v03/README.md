@@ -68,8 +68,8 @@ Du kan nu starta HeroDex i tre olika lägen:
 
 ## 📘 Förklaring
 
-•	--data= används alltid om den finns
-•	annars används --mock om den flaggan finns
+•	`--data=` används alltid om den finns
+•	annars används `--mock` om den flaggan finns
 •	annars blir det standard (heroes.json)
 
 
