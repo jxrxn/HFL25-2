@@ -69,7 +69,7 @@ SUPERHERO_API_TOKEN=din_token_här
 🔒 Viktigt: .env finns med i .gitignore så den kommer inte att laddas upp till GitHub.
 Dela aldrig din riktiga token offentligt.
 
-✅ Testa att din token fungerar
+### 3️⃣ Testa att din token fungerar
 Kör följande kommando i terminalen:
 ```bash
 dart run bin/check_env.dart
