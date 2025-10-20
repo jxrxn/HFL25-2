@@ -34,9 +34,9 @@ cd ~/Documents/GitHub
 git clone https://github.com/jxrxn/HFL25-2.git
 ```
 
-### Gå in i version 02
+### Gå in i version 04
 ```bash
-cd HFL25-2/v03
+cd HFL25-2/v04
 ```
 
 ### Hämta paket
