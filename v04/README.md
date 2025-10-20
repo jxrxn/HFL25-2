@@ -48,6 +48,39 @@ dart run bin/herodex.dart
 ```
 
 
+## 🔑 SuperHero API – sök hjältar online
+
+För att HeroDex 3000 ska kunna söka hjältar online använder den **SuperHero API**.  
+Du behöver en personlig **API-token** som identifierar din inloggning mot tjänsten.
+
+### 1️⃣ Skaffa din token
+1. Gå till [https://www.superheroapi.com/](https://www.superheroapi.com/)
+2. Logga in med ditt GitHub-konto
+3. Du får automatiskt en **access token** (en rad med 32 hexadecimala siffror).  
+   Kopiera den.
+
+### 2️⃣ Skapa din `.env`-fil
+I mappen `v04/` (samma där `bin/` och `lib/` finns) – skapa en ny fil som heter **`.env`**  
+och klistra in följande rad:
+
+```bash
+SUPERHERO_API_TOKEN=din_token_här
+```
+🔒 Viktigt: .env finns med i .gitignore så den kommer inte att laddas upp till GitHub.
+Dela aldrig din riktiga token offentligt.
+
+✅ Testa att din token fungerar
+Kör följande kommando i terminalen:
+```bash
+dart run bin/check_env.dart
+```
+Om allt är korrekt ser du något liknande:
+```bash
+TOKEN_STATUS=present
+TOKEN_MASKED=7ad•••6c1
+TOKEN_LENGTH=32
+```
+
 ## 🧪 Olika lägen
 
 Du kan nu starta HeroDex i tre olika lägen:
