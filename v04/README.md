@@ -17,6 +17,8 @@ Sparas automatiskt i JSON-format.
   •  JSON-persistens via dart:io och dart:convert.  
   •	 Färgade meddelanden för info, felmeddelanden och varningar.  
   •	 Varje hjälte får ett globalt unikt ID (UUID v4) genererat med paketet uuid.  
+  •	 Inga hjältar kan ha samma namn.  
+  •	 Samma hjälte kan inte sparas två gånger från API-sökning.
 
 ---
 
