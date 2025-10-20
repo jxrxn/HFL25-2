@@ -8,8 +8,8 @@ Sparas automatiskt i JSON-format.
 ## ⚙️ Funktioner
 1. Lägg till hjälte (namn, styrka, specialkraft, kön, ursprung, alignment)
 2. Visa hjältar (sorterade efter styrka)
-3. Sök efter hjältar
-4. Ta bort hjälte (via nummer eller namn)
+3. Sök efter hjältar (via API + lokalt)
+4. Ta bort hjälte
 5. Automatisk spara/ladda från `heroes.json`
 
   •	 Singleton (HeroDataManager.instance) säkerställer en enda global instans.  
