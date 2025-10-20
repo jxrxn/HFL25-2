@@ -1,0 +1,19 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  exclude:
+    - "**/.dart_tool/**"
+    - "**/build/**"
+
+linter:
+  rules:
+    # Håll importerna snygga och stabila
+    directives_ordering: true
+    always_use_package_imports: true
+
+    # Små kvalitetssaker som gör koden renare
+    prefer_final_locals: true
+    prefer_final_in_for_each: true
+
+    # Tillåt print i en CLI-app (sätt till true om du vill förbjuda)
+    avoid_print: false
