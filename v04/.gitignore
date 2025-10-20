@@ -1,8 +1,5 @@
 # https://dart.dev/guides/libraries/private-files
 # Created by `dart pub`
 .dart_tool/
-.DS_Storev02/heroes.json
-.DS_Store
-HFL25-2.code-workspace
-v*/heroes.json
-.vscode/
+heroes.json
+mock_runtime.json
