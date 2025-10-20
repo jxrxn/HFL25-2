@@ -127,13 +127,46 @@ int askStrength() {
 
 Future<void> saveUnique(HeroModel hero) async {
   final list = await store.getHeroList();
-  final already = list.any((h) => h.id == hero.id);
-  if (already) {
-    printWarn("⚠️  '${hero.name}' finns redan (id: ${hero.id}).");
+
+  // Dubblettkoll: id ELLER namn (case-insensitive)
+  final alreadyById = list.any((h) => h.id == hero.id);
+  final norm = hero.name.trim().toLowerCase();
+  final alreadyByName =
+      list.any((h) => h.name.trim().toLowerCase() == norm);
+
+  if (alreadyById || alreadyByName) {
+    printWarn("⚠️  '${hero.name}' finns redan (match på ${alreadyById ? 'id' : 'namn'}).");
     return;
   }
+
   await store.saveHero(hero);
   printSuccess("✅ '${hero.name}' sparad i lokal lista.");
+}
+
+String _norm(String s) => s.trim().toLowerCase();
+
+/// Frågar efter ett alias som inte redan finns.
+/// Returnerar `null` om användaren avbryter.
+Future<String?> askUniqueAlias({String prompt = "Ange hjältenamn (alias)"}) async {
+  final existing = (await store.getHeroList()).map((h) => _norm(h.name)).toSet();
+
+  while (true) {
+    stdout.write("$prompt (tomt = avbryt): ");
+    final raw = stdin.readLineSync()?.trim() ?? '';
+
+    if (raw.isEmpty) {
+      printWarn("Avbrutet.");
+      return null;
+    }
+
+    final norm = _norm(raw);
+    if (existing.contains(norm)) {
+      printError("⚠️  Namnet '$raw' är redan upptaget. Välj ett annat.");
+      continue;
+    }
+
+    return raw;
+  }
 }
 
 /// ====== Sökfiltrering ======
@@ -154,39 +187,58 @@ bool _isVillain(HeroModel h) {
   return a.contains('bad') || a.contains('evil');
 }
 
+/// ====== Sök-/listfiltrering (1–3) ======
+/// 1 = Alla, 2 = Heroes (good), 3 = Villains (bad)
 AlignmentFilter _askAlignmentFilter() {
-  printInfo("\nFiltrera lista:");
+  printInfo("\nVälj filter för visning:");
   print("1. Alla");
-  print("2. Heroes (alignment: good)");
-  print("3. Villains (alignment: bad)");
-  stdout.write("Välj (1/2/3, tomt = 1): ");
+  print("2. Heroes (good)");
+  print("3. Villains (bad)");
+  stdout.write("Val (1–3, tomt = 1): ");
 
   final v = stdin.readLineSync()?.trim();
   switch (v) {
     case '2':
-      return AlignmentFilter.heroes;
+      return AlignmentFilter.heroes;   // alignment innehåller 'good'
     case '3':
-      return AlignmentFilter.villains;
+      return AlignmentFilter.villains; // alignment innehåller 'bad' eller 'evil'
     default:
       return AlignmentFilter.all;
   }
 }
 
-/// ====== Funktioner ======
+/// ====== Hjälpfunktioner för alignment ======
+String askAlignment() {
+  printInfo("\nVälj alignment:");
+  print("1. God (good)");
+  print("2. Neutral");
+  print("3. Ond (bad)");
+  stdout.write("Val (1–3, tomt = 2): ");
+  final v = stdin.readLineSync()?.trim();
+  switch (v) {
+    case '1':
+      return 'good';
+    case '3':
+      return 'bad';
+    default:
+      return 'neutral';
+  }
+}
+
+/// ====== Funktion för att lägga till hjälte ======
 Future<void> addHero() async {
-  final name = askString("Ange hjältenamn (alias)", defaultValue: "Okänd");
+  final name = await askUniqueAlias();
+  if (name == null) return; // användaren avbröt
+
   final realName = askString("Ange riktigt namn (valfritt)", defaultValue: "");
   final strength = askStrength();
   final special = askString("Ange specialkraft", defaultValue: "ingen");
   final gender = askString("Ange kön", defaultValue: "Okänt");
   final origin = askString("Ange ursprung/ras", defaultValue: "Okänt");
-  final align = askString(
-    "Ange alignment (t.ex. snäll/neutral/ond)",
-    defaultValue: "neutral",
-  );
+  final align = askAlignment();
 
   final hero = HeroModel(
-    id: _uuid.v4(), // t.ex. "550e8400-e29b-41d4-a716-446655440000"
+    id: _uuid.v4(),
     name: name,
     powerstats: {"strength": strength},
     appearance: {"gender": gender, "race": origin},
@@ -197,8 +249,9 @@ Future<void> addHero() async {
     work: {"occupation": special},
   );
 
+  // Direkt spara, utan ny dublettkoll (den gjordes redan i askUniqueAlias)
   await store.saveHero(hero);
-  printSuccess("✅ ${hero.name} tillagd!");
+  printSuccess("✅ '${hero.name}' tillagd!");
 }
 
 Future<void> showHeroes() async {
