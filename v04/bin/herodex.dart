@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:uuid/uuid.dart';
+
 import 'package:v04/app_store.dart';
 import 'package:v04/env.dart';
 import 'package:v04/models/hero_model.dart';
@@ -122,7 +123,7 @@ int askStrength() {
   }
 }
 
-/// ======  Spara utan dubletter ======
+/// ====== Spara utan dubletter ======
 
 Future<void> saveUnique(HeroModel hero) async {
   final list = await store.getHeroList();
@@ -133,6 +134,42 @@ Future<void> saveUnique(HeroModel hero) async {
   }
   await store.saveHero(hero);
   printSuccess("✅ '${hero.name}' sparad i lokal lista.");
+}
+
+/// ====== Sökfiltrering ======
+enum AlignmentFilter { all, heroes, villains }
+
+String _alignmentOf(HeroModel h) =>
+    (h.biography?['alignment']?.toString().toLowerCase() ?? '').trim();
+
+bool _isHero(HeroModel h) {
+  final a = _alignmentOf(h);
+  // Träffar 'good', 'neutral good', etc.
+  return a.contains('good') && !a.contains('bad');
+}
+
+bool _isVillain(HeroModel h) {
+  final a = _alignmentOf(h);
+  // Träffar 'bad', 'evil', etc. (API brukar ha 'bad')
+  return a.contains('bad') || a.contains('evil');
+}
+
+AlignmentFilter _askAlignmentFilter() {
+  printInfo("\nFiltrera lista:");
+  print("1. Alla");
+  print("2. Heroes (alignment: good)");
+  print("3. Villains (alignment: bad)");
+  stdout.write("Välj (1/2/3, tomt = 1): ");
+
+  final v = stdin.readLineSync()?.trim();
+  switch (v) {
+    case '2':
+      return AlignmentFilter.heroes;
+    case '3':
+      return AlignmentFilter.villains;
+    default:
+      return AlignmentFilter.all;
+  }
 }
 
 /// ====== Funktioner ======
@@ -171,14 +208,39 @@ Future<void> showHeroes() async {
     return;
   }
 
-  final sorted = [...heroes]
-    ..sort((a, b) {
-      final as = int.tryParse('${a.powerstats?['strength'] ?? 0}') ?? 0;
-      final bs = int.tryParse('${b.powerstats?['strength'] ?? 0}') ?? 0;
-      return bs.compareTo(as);
-    });
+  final filter = _askAlignmentFilter();
 
-  printInfo("\n=== Hjältar (starkast först) ===");
+  Iterable<HeroModel> filtered = heroes;
+  switch (filter) {
+    case AlignmentFilter.heroes:
+      filtered = heroes.where(_isHero);
+      break;
+    case AlignmentFilter.villains:
+      filtered = heroes.where(_isVillain);
+      break;
+    case AlignmentFilter.all:
+      // lämna som är
+      break;
+  }
+
+  final sorted = [...filtered]..sort((a, b) {
+    final as = int.tryParse('${a.powerstats?['strength'] ?? 0}') ?? 0;
+    final bs = int.tryParse('${b.powerstats?['strength'] ?? 0}') ?? 0;
+    return bs.compareTo(as);
+  });
+
+  final title = switch (filter) {
+    AlignmentFilter.heroes => "Hjältar (good)",
+    AlignmentFilter.villains => "Skurkar (bad)",
+    AlignmentFilter.all => "Alla (starkast först)",
+  };
+
+  if (sorted.isEmpty) {
+    printWarn("Inga poster matchade filtret.");
+    return;
+  }
+
+  printInfo("\n=== $title ===");
   for (final h in sorted) {
     print(h.toString());
   }

@@ -1,7 +1,8 @@
 import 'dart:io';
 
-/// Enkel hantering av miljövariabler från .env-fil (utan paket).
+/// Enkel hantering av miljövariabler från .env-fil (utan externa paket).
 /// Läser in filen rad för rad och lagrar nyckel/värde-par.
+/// Prioritet: 1) Miljövariabler (t.ex. GitHub Actions) → 2) .env-fil lokalt.
 class Env {
   static final Map<String, String> _vars = {};
 
@@ -9,7 +10,9 @@ class Env {
   static void load([String path = '.env']) {
     final file = File(path);
     if (!file.existsSync()) {
-      print('⚠️  Ingen .env-fil hittades ($path) — fortsätter utan miljövariabler.');
+      // Ignorera tyst i CI (där miljövariabler används)
+      if (Platform.environment.containsKey('GITHUB_ACTIONS')) return;
+      print('⚠️  Ingen .env-fil hittades ($path) — fortsätter utan lokala miljövariabler.');
       return;
     }
 
@@ -17,18 +20,24 @@ class Env {
       final trimmed = line.trim();
       if (trimmed.isEmpty || trimmed.startsWith('#')) continue;
 
-      final split = trimmed.split('=');
-      if (split.length >= 2) {
-        final key = split.first.trim();
-        final value = split.sublist(1).join('=').trim();
+      final index = trimmed.indexOf('=');
+      if (index != -1) {
+        final key = trimmed.substring(0, index).trim();
+        final value = trimmed.substring(index + 1).trim();
         _vars[key] = value;
       }
     }
   }
 
-  /// Hämta en variabel (eller null om saknas).
-  static String? get(String key) => _vars[key];
+  /// Hämtar en miljövariabel (först från OS, sedan .env)
+  static String? get(String key) {
+    final fromEnv = Platform.environment[key];
+    if (fromEnv != null && fromEnv.isNotEmpty) return fromEnv;
 
-  /// Bekvämt alias för API-nyckeln.
-  static String? get superheroToken => get('SUPERHERO_TOKEN');
+    return _vars[key];
+  }
+
+  /// Bekvämt alias för SuperHero API-token.
+  /// (Söker efter SUPERHERO_API_TOKEN både i OS och .env)
+  static String? get superheroToken => get('SUPERHERO_API_TOKEN');
 }
