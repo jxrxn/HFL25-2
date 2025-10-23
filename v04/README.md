@@ -41,6 +41,7 @@ Sparas automatiskt i JSON-format.
   •	 Abstrakt interface (HeroDataManaging) gör det lätt att byta ut lagring (t.ex. fil, API, moln).  
   •  JSON-persistens via dart:io och dart:convert.  
   •	 Färgade meddelanden för info, felmeddelanden och varningar.  
+  •	 Färg på hjältarnas namn visar om de är onda/goda(neutrala.  
   •	 Varje hjälte får ett globalt unikt ID (UUID v4) genererat med paketet uuid.  
   •	 Inga hjältar kan ha samma namn.  
   •	 Samma hjälte kan inte sparas två gånger från API-sökning.
