@@ -21,6 +21,75 @@ void printSuccess(String msg) => print("$green$msg$reset");
 void printInfo(String msg) => print("$cyan$msg$reset");
 void printWarn(String msg) => print("$yellow$msg$reset");
 
+
+
+void printBanner() {
+  print(cyan);
+  print(r'''
+╔═════════════════════════════════════════════════════════════════╗
+║                                                                 ║
+║    ██╗  ██╗███████╗██████╗  ██████╗ ██████╗ ███████╗██╗  ██╗    ║
+║    ██║  ██║██╔════╝██╔══██╗██╔═══██╗██╔══██╗██╔════╝╚██╗██╔╝    ║
+║    ███████║█████╗  ██████╔╝██║   ██║██║  ██║█████╗   ╚███╔╝     ║
+║    ██╔══██║██╔══╝  ██╔══██╗██║   ██║██║  ██║██╔══╝   ██╔██╗     ║
+║    ██║  ██║███████╗██║  ██║╚██████╔╝██████╔╝███████╗██╔╝ ██╗    ║
+║    ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝    ║
+║                                                                 ║
+║               ██████╗  ██████╗  ██████╗  ██████╗                ║
+║                ╚═══██╗██╔═══██╗██╔═══██╗██╔═══██╗               ║
+║                ██████║██║   ██║██║   ██║██║   ██║               ║
+║                 ╚══██║██║   ██║██║   ██║██║   ██║               ║
+║               ██████╔╝╚██████╔╝╚██████╔╝╚██████╔╝               ║
+║               ╚═════╝  ╚═════╝  ╚═════╝  ╚═════╝                ║
+║                                                                 ║
+║                  HeroDex 3000 — Superhero CLI                   ║
+║                                                                 ║
+╚═════════════════════════════════════════════════════════════════╝
+''');
+  print(reset);
+}
+
+
+
+// === Hjälp för färgade rubriker ===
+String label(String text) => "$cyan$text:$reset";
+
+String? _m(Map<String, dynamic>? map, String key) => map?[key]?.toString();
+
+int _strengthOf(HeroModel h) {
+  final v = h.powerstats?['strength'];
+  if (v is int) return v;
+  return int.tryParse('$v') ?? 0;
+}
+
+// Kort rad (för online-söklistor)
+String shortLine(HeroModel h) {
+  final fullName = _m(h.biography, 'full-name') ?? 'Okänt';
+  final gender   = _m(h.appearance, 'gender')   ?? 'Okänt';
+  final strength = _strengthOf(h);
+  return "${green}${h.name}${reset} ($fullName) | "
+         "${label('styrka')} $strength | "
+         "${label('kön')} $gender";
+}
+
+// Full rad (för listning/lokala träffar)
+String heroLine(HeroModel h) {
+  final fullName  = _m(h.biography, 'full-name') ?? 'Okänt';
+  final gender    = _m(h.appearance, 'gender')   ?? 'Okänt';
+  final race      = _m(h.appearance, 'race')     ?? 'Okänt';
+  final alignment = _m(h.biography, 'alignment') ?? 'neutral';
+  final special   = _m(h.work, 'occupation')     ?? 'ingen';
+  final strength  = _strengthOf(h);
+
+  return "${green}${h.name}${reset} ($fullName) | "
+         "${label('styrka')} $strength | "
+         "${label('kön')} $gender | "
+         "${label('ursprung')} $race | "
+         "${label('alignment')} $alignment | "
+         "${label('special')} $special";
+}
+
+
 /// ====== Start & argument ======
 /// - `dart run bin/herodex.dart`                → skarpt läge (standardstore → heroes.json)
 /// - `dart run bin/herodex.dart --mock`         → mock-läge   (test/mock_heroes.json)
@@ -73,6 +142,8 @@ Future<void> main(List<String> args) async {
 
   var running = true;
   while (running) {
+    printBanner(); // 👈 bara anropet här
+
     printInfo("\n=== HeroDex 3000 ===");
     print("1. Lägg till hjälte");
     print("2. Visa hjältar");
@@ -276,11 +347,11 @@ Future<void> showHeroes() async {
       break;
   }
 
-  final sorted = [...filtered]..sort((a, b) {
-    final as = int.tryParse('${a.powerstats?['strength'] ?? 0}') ?? 0;
-    final bs = int.tryParse('${b.powerstats?['strength'] ?? 0}') ?? 0;
-    return bs.compareTo(as);
-  });
+    final sorted = [...filtered]..sort((a, b) {
+      final as = _strengthOf(a);
+      final bs = _strengthOf(b);
+      return bs.compareTo(as);
+    });
 
   final title = switch (filter) {
     AlignmentFilter.heroes => "Hjältar (good)",
@@ -295,7 +366,7 @@ Future<void> showHeroes() async {
 
   printInfo("\n=== $title ===");
   for (final h in sorted) {
-    print(h.toString());
+    print(heroLine(h));
   }
 }
 
@@ -330,7 +401,7 @@ Future<void> searchHeroes() async {
     for (var i = 0; i < online.length; i++) {
       final h = online[i];
       // gör det kompakt men informativt
-      print("${i + 1}. ${h.toShortString()}");
+      print("${i + 1}. ${shortLine(h)}");
     }
 
     // 3b) Fråga om du vill spara någon av onlineresultaten
@@ -356,7 +427,7 @@ Future<void> searchHeroes() async {
   } else {
     printInfo("\n=== Lokala matchningar ===");
     for (final h in localList) {
-      print(h.toString());
+      print(heroLine(h));
     }
   }
 }
