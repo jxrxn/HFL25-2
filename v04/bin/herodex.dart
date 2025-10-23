@@ -36,9 +36,9 @@ void printBanner() {
 ║    ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝    ║
 ║                                                                 ║
 ║               ██████╗  ██████╗  ██████╗  ██████╗                ║
-║                ╚═══██╗██╔═══██╗██╔═══██╗██╔═══██╗               ║
-║                ██████║██║   ██║██║   ██║██║   ██║               ║
-║                 ╚══██║██║   ██║██║   ██║██║   ██║               ║
+║                ╚══███╗██╔═══██╗██╔═══██╗██╔═══██╗               ║
+║                ████╗═╝██║   ██║██║   ██║██║   ██║               ║
+║                 ╚═███╗██║   ██║██║   ██║██║   ██║               ║
 ║               ██████╔╝╚██████╔╝╚██████╔╝╚██████╔╝               ║
 ║               ╚═════╝  ╚═════╝  ╚═════╝  ╚═════╝                ║
 ║                                                                 ║
@@ -51,7 +51,7 @@ void printBanner() {
 
 
 
-// === Hjälp för färgade rubriker ===
+// === Hjälp för färgade rubriker och namn ===
 String label(String text) => "$cyan$text:$reset";
 
 String? _m(Map<String, dynamic>? map, String key) => map?[key]?.toString();
@@ -62,12 +62,21 @@ int _strengthOf(HeroModel h) {
   return int.tryParse('$v') ?? 0;
 }
 
+// Hämta färg baserat på alignment
+String _alignmentColor(HeroModel h) {
+  final align = (h.biography?['alignment']?.toString().toLowerCase() ?? '');
+  if (align.contains('good')) return green;
+  if (align.contains('bad') || align.contains('evil')) return red;
+  return cyan; // neutral
+}
+
 // Kort rad (för online-söklistor)
 String shortLine(HeroModel h) {
   final fullName = _m(h.biography, 'full-name') ?? 'Okänt';
   final gender   = _m(h.appearance, 'gender')   ?? 'Okänt';
   final strength = _strengthOf(h);
-  return "${green}${h.name}${reset} ($fullName) | "
+  final color    = _alignmentColor(h);
+  return "$color${h.name}$reset ($fullName) | "
          "${label('styrka')} $strength | "
          "${label('kön')} $gender";
 }
@@ -80,8 +89,9 @@ String heroLine(HeroModel h) {
   final alignment = _m(h.biography, 'alignment') ?? 'neutral';
   final special   = _m(h.work, 'occupation')     ?? 'ingen';
   final strength  = _strengthOf(h);
+  final color     = _alignmentColor(h);
 
-  return "${green}${h.name}${reset} ($fullName) | "
+  return "$color${h.name}$reset ($fullName) | "
          "${label('styrka')} $strength | "
          "${label('kön')} $gender | "
          "${label('ursprung')} $race | "
@@ -365,9 +375,9 @@ Future<void> showHeroes() async {
   }
 
   printInfo("\n=== $title ===");
-  for (final h in sorted) {
-    print(heroLine(h));
-  }
+    for (final h in sorted) {
+      print(heroLine(h));
+    }
 }
 
 Future<void> searchHeroes() async {
@@ -400,7 +410,6 @@ Future<void> searchHeroes() async {
     printInfo("\n=== Online-sökresultat (SuperHero API) ===");
     for (var i = 0; i < online.length; i++) {
       final h = online[i];
-      // gör det kompakt men informativt
       print("${i + 1}. ${shortLine(h)}");
     }
 
