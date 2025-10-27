@@ -35,23 +35,38 @@ class HeroDataManager implements HeroDataManaging {
   // ==== Utilities ====
   static String _normName(String s) => s.trim().toLowerCase();
 
-  // ==== Offentligt API ====
+  // ===================================================================
+  // Offentligt API (kontrakt från HeroDataManaging + extra hjälpmetoder)
+  // ===================================================================
 
-  /// Spara en hjälte om inte dubblett (match på id **eller** namn, case-insensitive).
+  /// Spara hjälte – bakåtkompatibel signatur.
+  /// Under huven använder vi `saveUnique` (tyst dubblettskydd).
   @override
   Future<void> saveHero(HeroModel hero) async {
+    await saveUnique(hero);
+  }
+
+  /// Spara en hjälte endast om ingen dubblett finns (matchar på id **eller** namn, case-insensitive).
+  /// Returnerar:
+  ///  - `true`  om hjälten sparades
+  ///  - `false` om dubblett upptäcktes och inget sparades
+  Future<bool> saveUnique(HeroModel hero) async {
     await _ensureLoaded();
 
     final norm = _normName(hero.name);
     final exists = _heroes.any((h) => h.id == hero.id || _normName(h.name) == norm);
-    if (exists) {
-      // Vill du få feedback i CLI:t kan du avkommentera raden nedan:
-      // print("⚠️  Dubblett hoppad över: ${hero.name} (id: ${hero.id})");
-      return;
-    }
+    if (exists) return false;
 
     _heroes.add(hero);
     await _saveToDisk();
+    return true;
+  }
+
+  /// Finns hjälte med exakt namn (case-insensitiv jämförelse)?
+  Future<bool> existsByName(String name) async {
+    await _ensureLoaded();
+    final norm = _normName(name);
+    return _heroes.any((h) => _normName(h.name) == norm);
   }
 
   /// Hämta hela listan (lazy-loadar första gången).
@@ -80,7 +95,20 @@ class HeroDataManager implements HeroDataManaging {
     return true;
   }
 
-  // ==== Privata hjälpmetoder ====
+  /// Ta bort hjälte via **exakt namn** (case-insensitivt). Returnerar true om någon togs bort.
+  Future<bool> deleteHeroByName(String name) async {
+    await _ensureLoaded();
+    final norm = _normName(name);
+    final idx = _heroes.indexWhere((h) => _normName(h.name) == norm);
+    if (idx == -1) return false;
+    _heroes.removeAt(idx);
+    await _saveToDisk();
+    return true;
+  }
+
+  // ======================
+  // Privata hjälpmetoder
+  // ======================
 
   /// Säkerställ att minnescachen är laddad.
   Future<void> _ensureLoaded() async {
