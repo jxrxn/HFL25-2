@@ -32,7 +32,7 @@ Sparas automatiskt i JSON-format.
 
 ## ⚙️ Funktioner
 1. Lägg till hjälte (namn, styrka, specialkraft, kön, ursprung, alignment)
-2. Visa hjältar (sorterade efter styrka)
+2. Visa hjältar (sorterade efter styrka, eller i bokstavsordning)
 3. Sök efter hjältar (via API + lokalt)
 4. Ta bort hjälte
 5. Automatisk spara/ladda från `heroes.json`
