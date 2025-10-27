@@ -101,6 +101,8 @@ String heroLine(HeroModel h) {
 // filter-helpers
 enum AlignmentFilter { all, heroes, villains, neutral }
 
+enum SortOrder { strength, nameAZ, nameZA }
+
 String _aln(HeroModel h) =>
     (h.biography?['alignment']?.toString().toLowerCase() ?? '').trim();
 
@@ -124,6 +126,19 @@ AlignmentFilter _askAlignmentFilter() {
     case '3': return AlignmentFilter.villains;
     case '4': return AlignmentFilter.neutral;
     default:  return AlignmentFilter.all;
+  }
+}
+
+SortOrder _askSortOrder() {
+  printInfo("\nVälj sorteringsordning:");
+  print("1. Efter styrka (standard)");
+  print("2. Efter namn (A–Ö)");
+  print("3. Efter namn (Ö–A)");
+  stdout.write("Val (1–3, tomt = 1): ");
+  switch ((stdin.readLineSync() ?? '').trim()) {
+    case '2': return SortOrder.nameAZ;
+    case '3': return SortOrder.nameZA;
+    default:  return SortOrder.strength;
   }
 }
 
@@ -185,37 +200,67 @@ Future<void> listHeroes() async {
     return;
   }
 
+  // === 1. Filtrera efter alignment ===
   final filter = _askAlignmentFilter();
 
   Iterable<HeroModel> filtered = heroes;
   switch (filter) {
-    case AlignmentFilter.heroes:   filtered = heroes.where(_isHero);    break;
-    case AlignmentFilter.villains: filtered = heroes.where(_isVillain); break;
-    case AlignmentFilter.neutral:  filtered = heroes.where(_isNeutral); break;
-    case AlignmentFilter.all:      /* lämna som är */                   break;
+    case AlignmentFilter.heroes:
+      filtered = heroes.where(_isHero);
+      break;
+    case AlignmentFilter.villains:
+      filtered = heroes.where(_isVillain);
+      break;
+    case AlignmentFilter.neutral:
+      filtered = heroes.where(_isNeutral);
+      break;
+    case AlignmentFilter.all:
+      // lämna som det är
+      break;
   }
 
-  final sorted = [...filtered]..sort(
-    (a, b) => _strengthOf(b).compareTo(_strengthOf(a)),
-  );
+  // === 2. Välj sorteringsordning ===
+  final sortOrder = _askSortOrder();
 
+  final sorted = [...filtered];
+  switch (sortOrder) {
+    case SortOrder.nameAZ:
+      sorted.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      break;
+    case SortOrder.nameZA:
+      sorted.sort((a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()));
+      break;
+    case SortOrder.strength:
+      sorted.sort((a, b) => _strengthOf(b).compareTo(_strengthOf(a)));
+      break;
+  }
+
+  // === 3. Titel för visning ===
   final title = switch (filter) {
     AlignmentFilter.heroes   => "Hjältar (good)",
-    AlignmentFilter.villains => "Skurkar (bad/evil)",
+    AlignmentFilter.villains => "Skurkar (bad)",
     AlignmentFilter.neutral  => "Neutrala",
-    AlignmentFilter.all      => "Alla (starkast först)",
+    AlignmentFilter.all      => "Alla",
   };
 
+  final sortLabel = switch (sortOrder) {
+    SortOrder.nameAZ   => " (A–Ö)",
+    SortOrder.nameZA   => " (Ö–A)",
+    SortOrder.strength => " (styrka)",
+  };
+
+  // === 4. Utskrift ===
   if (sorted.isEmpty) {
     printWarn("Inga poster matchade filtret.");
     return;
   }
 
-  printInfo("\n=== $title — ${sorted.length} st ===");
+  printInfo("\n=== $title$sortLabel — ${sorted.length} st ===");
   for (final h in sorted) {
-    print(heroLine(h)); // behåller cyan rubriker + färgat namn per alignment
+    print(heroLine(h));
   }
 }
+
 
 Future<void> deleteHero() async {
   final heroes = await manager.getHeroList();
