@@ -1,10 +1,11 @@
 import 'dart:io';
+
 import 'package:uuid/uuid.dart';
 
 import 'package:v04/env.dart';
-import 'package:v04/models/hero_model.dart';
 import 'package:v04/managers/hero_data_manager.dart';
-import 'package:v04/services/superhero_api_service.dart'; 
+import 'package:v04/models/models.dart'; // ← barrel: exporterar alla modeller
+import 'package:v04/services/superhero_api_service.dart';
 
 final _uuid = Uuid();
 

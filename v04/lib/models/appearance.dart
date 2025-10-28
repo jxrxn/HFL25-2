@@ -16,19 +16,19 @@ class Appearance {
   });
 
   factory Appearance.fromJson(Map<String, dynamic> json) {
-    String _s(dynamic v) => v?.toString().trim() ?? '';
-    List<String> _list(dynamic v) {
+    String s(dynamic v) => v?.toString().trim() ?? '';
+    List<String> list(dynamic v) {
       if (v is List) return v.map((e) => e.toString()).toList();
       if (v is String && v.isNotEmpty) return [v];
       return [];
     }
 
-    final gender = _s(json['gender']);
-    final race = _s(json['race']);
-    final eye = _s(json['eye-color']);
-    final hair = _s(json['hair-color']);
-    final height = _list(json['height']);
-    final weight = _list(json['weight']);
+    final gender = s(json['gender']);
+    final race = s(json['race']);
+    final eye = s(json['eye-color']);
+    final hair = s(json['hair-color']);
+    final height = list(json['height']);
+    final weight = list(json['weight']);
 
     return Appearance(
       gender: gender.isEmpty ? null : gender,

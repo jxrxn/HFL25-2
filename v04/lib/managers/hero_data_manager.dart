@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:v04/managers/hero_data_managing.dart';
-import 'package:v04/models/hero_model.dart';
+import 'package:v04/models/models.dart';
 
 class HeroDataManager implements HeroDataManaging {
   // ==== Singleton (produktion) ====

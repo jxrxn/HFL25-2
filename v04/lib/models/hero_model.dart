@@ -11,10 +11,10 @@ import 'package:v04/models/biography.dart';
 import 'package:v04/models/powerstats.dart';
 import 'package:v04/models/work.dart';
 
-// Re-export för bekväm import från en plats
-export 'package:v04/models/powerstats.dart';
 export 'package:v04/models/appearance.dart';
 export 'package:v04/models/biography.dart';
+// Re-export för bekväm import från en plats
+export 'package:v04/models/powerstats.dart';
 export 'package:v04/models/work.dart';
 
 class HeroModel {
@@ -39,22 +39,22 @@ class HeroModel {
   /// - Tål att värden är "stringiga" (submodeller fixar)
   /// - Returnerar aldrig null (utan en tom/partial HeroModel)
   factory HeroModel.fromJson(Map<String, dynamic> json) {
-    Powerstats? _ps(dynamic v) =>
+    Powerstats? ps(dynamic v) =>
         (v is Map<String, dynamic>) ? Powerstats.fromJson(v) : null;
-    Appearance? _ap(dynamic v) =>
+    Appearance? ap(dynamic v) =>
         (v is Map<String, dynamic>) ? Appearance.fromJson(v) : null;
-    Biography? _bi(dynamic v) =>
+    Biography? bi(dynamic v) =>
         (v is Map<String, dynamic>) ? Biography.fromJson(v) : null;
-    Work? _wo(dynamic v) =>
+    Work? wo(dynamic v) =>
         (v is Map<String, dynamic>) ? Work.fromJson(v) : null;
 
     return HeroModel(
       id: '${json['id'] ?? ''}',
       name: '${json['name'] ?? ''}',
-      powerstats: _ps(json['powerstats']),
-      appearance: _ap(json['appearance']),
-      biography: _bi(json['biography']),
-      work: _wo(json['work']),
+      powerstats: ps(json['powerstats']),
+      appearance: ap(json['appearance']),
+      biography: bi(json['biography']),
+      work: wo(json['work']),
     );
   }
 
