@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:v04/env.dart';
 import 'package:v04/managers/hero_data_manager.dart';
+import 'package:v04/mock/mock_loader.dart';
 import 'package:v04/models/models.dart';             // barrel: alla modeller
 import 'package:v04/services/superhero_api_service.dart';
 import 'package:v04/ui/cli_utils.dart';              // färger + print* helpers + label()
@@ -301,14 +302,40 @@ Future<void> searchHeroesOnline() async {
   }
 }
 
+
 // ============================================================
 // MAIN
 // ============================================================
 
 Future<void> main(List<String> args) async {
+  // 1) Läs in miljövariabler (API-token m.m.)
   Env.load();
+
+  // 2) Visa maskerad API-nyckel (om satt)
+  final token = Env.superheroToken;
+  if (token == null || token.isEmpty) {
+    printWarn("🔒 Ingen SUPERHERO_API_TOKEN hittades i .env");
+  } else {
+    final masked = token.length > 8
+        ? '${token.substring(0, 4)}•••${token.substring(token.length - 3)}'
+        : '${token.substring(0, 2)}•••';
+    printInfo("✅ API-nyckel laddad: $masked");
+  }
+
+  // 3) Visa banner
   printBanner();
 
+  // 4) Tolka CLI-flaggor
+  final useMock = args.contains('--mock');
+
+  // 5) Ev. mock-läge (helt separerad fil + JSON-inläsning)
+  if (useMock) {
+    printInfo("🧪 Startar HeroDex i mock-läge (använder heroes_mock.json)");
+    manager.setDataFile('heroes_mock.json');
+    await loadMockHeroesFromFile(manager); // läser test/mock_heroes.json -> heroes_mock.json
+  }
+
+  // 6) Huvudloop
   var running = true;
   while (running) {
     printInfo("\n=== HeroDex 3000 ===");

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:v04/managers/hero_data_managing.dart';
-import 'package:v04/models/models.dart';
+import 'package:v04/models/hero_model.dart';
 
 class HeroDataManager implements HeroDataManaging {
   // ==== Singleton (produktion) ====
@@ -15,35 +15,60 @@ class HeroDataManager implements HeroDataManaging {
     _loaded = false;
   }
 
-  // För tester: separat instans (ej singleton) med egen fil
+  /// För tester: separat instans med egen fil (ej singleton)
   HeroDataManager.internalForTesting(String customPath) {
     _saveFile = customPath;
     _loaded = false;
   }
 
   // ==== Tillstånd ====
-  late final String _saveFile;
+  // NOTE: inte final längre → kan växla mellan heroes.json och heroes_mock.json
+  late String _saveFile;
   final List<HeroModel> _heroes = [];
   bool _loaded = false;
 
   // ==== Utilities ====
-  static String _normalizeName(String s) => s.trim().toLowerCase();
+  static String _normalizeName(String s) =>
+      s.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+  static bool _isInvalidName(String s) {
+    final n = _normalizeName(s);
+    return n.isEmpty || n == 'unknown' || n == 'null';
+  }
 
   // ================= PUBLIC API =================
 
-  /// Bakåtkompatibel signatur – använder tyst dubblettskydd.
+  /// Byt datafil (t.ex. vid mock-läge). Rensar cache och lazy-laddar nästa gång.
+  void setDataFile(String path) {
+    _saveFile = path;
+    _loaded = false;     // tvinga omladdning från nya filen
+    _heroes.clear();     // släpp tidigare cache
+  }
+
+  /// Töm all data och skriv tomt JSON-array till nuvarande fil.
+  Future<void> clearAll() async {
+    _heroes.clear();
+    _loaded = true;      // cache är nu “laddad” men tom
+    await _saveToDisk();
+  }
+
+  /// Bakåtkompatibelt: sparar via saveUnique (tyst dubblettskydd).
   @override
   Future<void> saveHero(HeroModel hero) async {
     await saveUnique(hero);
   }
 
-  /// Sparar endast om ingen dubblett (match på id **eller** normaliserat namn).
+  /// Spara endast om ingen dubblett (match på id **eller** namn, case-insensitive).
+  /// Returnerar true om sparat, false om dubblett/ogiltigt.
   Future<bool> saveUnique(HeroModel hero) async {
     await _ensureLoaded();
-    if (!_isSane(hero)) return false; // spara inte trasig post
 
-    final norm = _normalizeName(hero.name);
-    final exists = _heroes.any((h) => h.id == hero.id || _normalizeName(h.name) == norm);
+    final id = (hero.id).toString().trim();
+    final nameNorm = _normalizeName(hero.name);
+    if (id.isEmpty || _isInvalidName(nameNorm)) return false;
+
+    final exists = _heroes.any(
+      (h) => h.id == id || _normalizeName(h.name) == nameNorm,
+    );
     if (exists) return false;
 
     _heroes.add(hero);
@@ -51,7 +76,7 @@ class HeroDataManager implements HeroDataManaging {
     return true;
   }
 
-  /// Finns hjälte med exakt namn (case-insensitivt)?
+  /// Finns hjälte med exakt namn (case-insensitive)?
   Future<bool> existsByName(String name) async {
     await _ensureLoaded();
     final norm = _normalizeName(name);
@@ -68,7 +93,9 @@ class HeroDataManager implements HeroDataManaging {
   Future<List<HeroModel>> searchHero(String query) async {
     final list = await getHeroList();
     final q = _normalizeName(query);
-    return list.where((h) => _normalizeName(h.name).contains(q)).toList(growable: false);
+    return list
+        .where((h) => _normalizeName(h.name).contains(q))
+        .toList(growable: false);
   }
 
   @override
@@ -115,7 +142,7 @@ class HeroDataManager implements HeroDataManaging {
 
       final decoded = jsonDecode(contents);
       if (decoded is! List) {
-        _heroes.clear(); // oväntat format
+        _heroes.clear(); // Oväntat format
         return;
       }
 
@@ -127,11 +154,9 @@ class HeroDataManager implements HeroDataManaging {
         if (e is! Map<String, dynamic>) continue;
 
         HeroModel? h;
-        // Försök primärt med typad parsing
         try {
           h = HeroModel.fromJson(e);
         } catch (_) {
-          // Fallback (identisk idag men behålls för framtiden)
           try {
             h = HeroModel.fromLooseJson(e);
           } catch (_) {
@@ -140,14 +165,10 @@ class HeroDataManager implements HeroDataManaging {
         }
         if (h == null) continue;
 
-        // === SANITY: hoppa över trasiga ===
-        if (!_isSane(h)) continue;
+        final id = (h.id).toString().trim();
+        final nameNorm = _normalizeName((h.name).toString());
+        if (id.isEmpty || _isInvalidName(nameNorm)) continue;
 
-        final id = h.id.trim();
-        final nameNorm = _normalizeName(h.name);
-        if (id.isEmpty || nameNorm.isEmpty) continue;
-
-        // Deduplikat: id ELLER namn
         if (seenIds.contains(id) || seenNames.contains(nameNorm)) continue;
 
         seenIds.add(id);
@@ -159,23 +180,8 @@ class HeroDataManager implements HeroDataManaging {
         ..clear()
         ..addAll(parsed);
     } catch (_) {
-      // korrupt/sönder → börja med tom lista
-      _heroes.clear();
+      _heroes.clear(); // korrupt/sönder → börja om tomt
     }
-  }
-
-  /// Enkel rimlighetskoll – styr hur "strikt" du vill vara i testerna.
-  bool _isSane(HeroModel h) {
-    if (h.id.trim().isEmpty) return false;
-    if (h.name.trim().isEmpty) return false;
-
-    // Godta att powerstats kan vara null i äldre sparfiler,
-    // men om den finns, låt åtminstone strength vara inom rimliga gränser.
-    final s = h.powerstats?.strength;
-    if (s != null && (s < 0 || s > 10000)) {
-      return false;
-    }
-    return true;
   }
 
   Future<void> _saveToDisk() async {
