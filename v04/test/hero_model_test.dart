@@ -18,29 +18,40 @@ void main() {
 
       final hero = HeroModel.fromJson(jsonMap);
 
+      // ---- Kontroll av parsing ----
       expect(hero.id, '70');
       expect(hero.name, 'Batman');
-      expect(hero.powerstats?['strength'], '26');
-      expect(hero.biography?['full-name'], 'Bruce Wayne');
-      expect(hero.appearance?['gender'], 'Male');
+      expect(hero.powerstats?.strength, 26);
+      expect(hero.powerstats?.intelligence, 100);
+      expect(hero.biography?.fullName, 'Bruce Wayne');
+      expect(hero.appearance?.gender, 'Male');
 
+      // ---- Kontroll av rundresa via toJson ----
       final back = hero.toJson();
-      // Räkna med att toJson kan sakna null-fält men här hade vi allt
-      expect(back['name'], 'Batman');
-      expect(back['powerstats']['intelligence'], '100');
 
-      // Bonus: säkerställ att JSON-serialisering fungerar
+      expect(back['id'], '70');
+      expect(back['name'], 'Batman');
+      expect(back['powerstats']['strength'], 26);
+      expect(back['powerstats']['intelligence'], 100);
+      expect(back['biography']['full-name'], 'Bruce Wayne');
+      expect(back['appearance']['gender'], 'Male');
+
+      // ---- Bonus: JSON-serialisering ska inte krascha ----
       expect(() => jsonEncode(back), returnsNormally);
     });
 
     test('tål ofullständig JSON (nullable-fält)', () {
       final partial = {"id": 1, "name": "Mystery"};
+
       final hero = HeroModel.fromJson(partial);
-      expect(hero.id, '1'); // coerce till sträng
-      expect(hero.name, 'Mystery'); // finns
+
+      // id konverteras alltid till sträng
+      expect(hero.id, '1');
+      expect(hero.name, 'Mystery');
       expect(hero.biography, isNull);
       expect(hero.powerstats, isNull);
-      // toString ska inte krascha trots null
+
+      // toString ska fungera trots null
       expect(hero.toString(), contains('Mystery'));
     });
   });
