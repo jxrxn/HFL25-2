@@ -18,21 +18,21 @@ class Biography {
   });
 
   factory Biography.fromJson(Map<String, dynamic> json) {
-    String _s(dynamic v) => v?.toString().trim() ?? '';
-    List<String> _list(dynamic v) {
+    String s(dynamic v) => v?.toString().trim() ?? '';
+    List<String> list(dynamic v) {
       if (v is List) return v.map((e) => e.toString()).toList();
       if (v is String && v.isNotEmpty) return [v];
       return [];
     }
 
     return Biography(
-      fullName: _s(json['full-name']).isEmpty ? null : _s(json['full-name']),
-      alterEgos: _s(json['alter-egos']).isEmpty ? null : _s(json['alter-egos']),
-      aliases: _list(json['aliases']),
-      placeOfBirth: _s(json['place-of-birth']).isEmpty ? null : _s(json['place-of-birth']),
-      firstAppearance: _s(json['first-appearance']).isEmpty ? null : _s(json['first-appearance']),
-      publisher: _s(json['publisher']).isEmpty ? null : _s(json['publisher']),
-      alignment: _s(json['alignment']).isEmpty ? null : _s(json['alignment']),
+      fullName: s(json['full-name']).isEmpty ? null : s(json['full-name']),
+      alterEgos: s(json['alter-egos']).isEmpty ? null : s(json['alter-egos']),
+      aliases: list(json['aliases']),
+      placeOfBirth: s(json['place-of-birth']).isEmpty ? null : s(json['place-of-birth']),
+      firstAppearance: s(json['first-appearance']).isEmpty ? null : s(json['first-appearance']),
+      publisher: s(json['publisher']).isEmpty ? null : s(json['publisher']),
+      alignment: s(json['alignment']).isEmpty ? null : s(json['alignment']),
     );
   }
 

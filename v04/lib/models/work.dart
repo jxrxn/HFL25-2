@@ -8,10 +8,10 @@ class Work {
   });
 
   factory Work.fromJson(Map<String, dynamic> json) {
-    String _s(dynamic v) => v?.toString().trim() ?? '';
+    String s(dynamic v) => v?.toString().trim() ?? '';
 
-    final occupation = _s(json['occupation']);
-    final base = _s(json['base']);
+    final occupation = s(json['occupation']);
+    final base = s(json['base']);
 
     return Work(
       occupation: occupation.isEmpty ? null : occupation,
