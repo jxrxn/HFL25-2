@@ -33,18 +33,18 @@ Sparas automatiskt i JSON-format.
 ## ⚙️ Funktioner
 1. Lägg till hjälte (namn, styrka, specialkraft, kön, ursprung, alignment)
 2. Visa hjältar (sorterade efter styrka, eller i bokstavsordning)
-3. Sök efter hjältar (via API + lokalt)
-4. Ta bort hjälte
+3. Sök efter hjältar online via SuperHero API  
+4. Ta bort hjälte från lokala listan  
 5. Automatisk spara/ladda från `heroes.json`
 
   •	 Singleton (HeroDataManager.instance) säkerställer en enda global instans.  
-  •	 Abstrakt interface (HeroDataManaging) gör det lätt att byta ut lagring (t.ex. fil, API, moln).  
+  •	 Interface (HeroDataManaging) gör det lätt att byta lagring (t.ex. API, moln, fil)  
   •  JSON-persistens via dart:io och dart:convert.  
   •	 Färgade meddelanden för info, felmeddelanden och varningar.  
-  •	 Färg på hjältarnas namn visar om de är onda/goda(neutrala.  
-  •	 Varje hjälte får ett globalt unikt ID (UUID v4) genererat med paketet uuid.  
-  •	 Inga hjältar kan ha samma namn.  
-  •	 Samma hjälte kan inte sparas två gånger från API-sökning.
+  •	 Färg på namn visar alignment (grön = good, röd = bad, cyan = neutral)   
+  •	 UUID v4 används för unika ID:n  
+  •	 Inga dubbletter tillåts (namn/id kontrolleras)  
+  •	 Token läses från .env och maskeras i terminalen (t.ex. abcd•••9f1)
 
 ---
 
@@ -133,3 +133,34 @@ Kör alla tester:
 ```bash
 dart test
 ```
+
+## 🧩 Filstruktur  
+
+```bash
+lib/
+ ├─ managers/
+ │   └─ hero_data_manager.dart
+ ├─ models/
+ │   ├─ appearance.dart
+ │   ├─ biography.dart
+ │   ├─ hero_model.dart
+ │   ├─ powerstats.dart
+ │   ├─ work.dart
+ │   └─ models.dart       ← barrel-fil
+ ├─ mock/
+ │   └─ mock_loader.dart  ← läser test/mock_heroes.json
+ ├─ services/
+ │   └─ superhero_api_service.dart
+ ├─ ui/
+ │   └─ cli_utils.dart
+ └─ usecases/
+     └─ hero_usecases.dart
+
+test/
+ ├─ mock_heroes.json
+ ├─ hero_data_manager_test.dart
+ ├─ hero_data_manager_mock_test.dart
+ ├─ hero_model_test.dart
+ └─ class_abstract_test.dart
+
+ ```
