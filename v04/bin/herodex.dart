@@ -3,8 +3,8 @@ import 'package:uuid/uuid.dart';
 
 import 'package:v04/env.dart';
 import 'package:v04/models/hero_model.dart';
-import 'package:v04/managers/hero_data_manager.dart'; // ✅ Ny import
-import 'package:v04/services/superhero_api_service.dart';
+import 'package:v04/managers/hero_data_manager.dart';
+import 'package:v04/services/superhero_api_service.dart'; 
 
 final _uuid = Uuid();
 
@@ -50,28 +50,20 @@ void printBanner() {
 
 // === Hjälp för färgade rubriker och namn ===
 String label(String text) => "$cyan$text:$reset";
-String? _m(Map<String, dynamic>? map, String key) => map?[key]?.toString();
 
-int _strengthOf(HeroModel h) {
-  final v = h.powerstats?['strength'];
-  if (v is int) return v;
-  return int.tryParse('$v') ?? 0;
-}
-
-String _alignmentOf(HeroModel h) =>
-    (h.biography?['alignment']?.toString().toLowerCase() ?? '').trim();
+int _strengthOf(HeroModel h) => h.powerstats?.strength ?? 0;
 
 String _nameColor(HeroModel h) {
-  final a = _alignmentOf(h);
-  if (a.contains('bad') || a.contains('evil')) return red; // skurkar
-  if (a.contains('good')) return green;                    // hjältar
-  return cyan;                                             // neutrala/okända
+  final a = h.alignmentNormalized;
+  if (a == 'bad') return red;
+  if (a == 'good') return green;
+  return cyan;
 }
 
 // Kort rad (för online-söklistor)
 String shortLine(HeroModel h) {
-  final fullName = _m(h.biography, 'full-name') ?? 'Okänt';
-  final gender   = _m(h.appearance, 'gender')   ?? 'Okänt';
+  final fullName = h.biography?.fullName ?? 'Okänt';
+  final gender   = h.appearance?.gender ?? 'Okänt';
   final strength = _strengthOf(h);
   final color    = _nameColor(h);
 
@@ -82,11 +74,11 @@ String shortLine(HeroModel h) {
 
 // Full rad (för lokala hjälte-listningar)
 String heroLine(HeroModel h) {
-  final fullName   = _m(h.biography, 'full-name') ?? 'Okänt';
-  final gender     = _m(h.appearance, 'gender')   ?? 'Okänt';
-  final race       = _m(h.appearance, 'race')     ?? 'Okänt';
-  final alignment  = _m(h.biography, 'alignment') ?? 'neutral';
-  final special    = _m(h.work, 'occupation')     ?? 'ingen';
+  final fullName   = h.biography?.fullName ?? 'Okänt';
+  final gender     = h.appearance?.gender ?? 'Okänt';
+  final race       = h.appearance?.race ?? 'Okänt';
+  final alignment  = h.biography?.alignment ?? 'neutral';
+  final special    = h.work?.occupation ?? 'ingen';
   final strength   = _strengthOf(h);
   final nameColor  = _nameColor(h);
 
@@ -103,16 +95,11 @@ enum AlignmentFilter { all, heroes, villains, neutral }
 
 enum SortOrder { strength, nameAZ, nameZA }
 
-String _aln(HeroModel h) =>
-    (h.biography?['alignment']?.toString().toLowerCase() ?? '').trim();
+String _aln(HeroModel h) => h.alignmentNormalized; // 'good' | 'bad' | 'neutral'
 
-bool _isHero(HeroModel h)    => _aln(h).contains('good') && !_aln(h).contains('bad');
-bool _isVillain(HeroModel h) => _aln(h).contains('bad')  || _aln(h).contains('evil');
-bool _isNeutral(HeroModel h) {
-  final a = _aln(h);
-  if (a.isEmpty) return true;                 // räkna okänt som neutral
-  return a == 'neutral' || a.contains('neutral');
-}
+bool _isHero(HeroModel h)    => _aln(h) == 'good';
+bool _isVillain(HeroModel h) => _aln(h) == 'bad';
+bool _isNeutral(HeroModel h) => _aln(h) == 'neutral';
 
 AlignmentFilter _askAlignmentFilter() {
   printInfo("\nVälj filter för visning:");
@@ -156,6 +143,17 @@ Future<bool> _existsByNameOrId(String name, String id) async {
   );
 }
 
+int _askIntInRange(String prompt, {required int min, required int max, required int fallback}) {
+  while (true) {
+    stdout.write("$prompt ($min–$max): ");
+    final raw = stdin.readLineSync()?.trim() ?? '';
+    final v = int.tryParse(raw);
+    if (v != null && v >= min && v <= max) return v;
+    if (raw.isEmpty) return fallback; // Enter ⇒ fallback inom intervallet
+    print("⚠️  Ogiltigt värde. Ange ett heltal mellan $min och $max, eller tryck Enter för $fallback.");
+  }
+}
+
 Future<void> addHero() async {
   stdout.write("Ange nytt hjältenamn: ");
   final name = stdin.readLineSync()?.trim();
@@ -169,8 +167,7 @@ Future<void> addHero() async {
   }
 
   final id = _uuid.v4();
-  stdout.write("Styrka (0–100): ");
-  final str = int.tryParse(stdin.readLineSync() ?? '') ?? 50;
+  final str = _askIntInRange("Styrka", min: 0, max: 100, fallback: 50);
   stdout.write("Kön: ");
   final gender = stdin.readLineSync()?.trim() ?? 'Okänt';
   stdout.write("Ursprung: ");
@@ -183,10 +180,10 @@ Future<void> addHero() async {
   final newHero = HeroModel(
     id: id,
     name: name,
-    powerstats: {'strength': str},
-    appearance: {'gender': gender, 'race': race},
-    biography: {'alignment': align},
-    work: {'occupation': occ},
+    powerstats: Powerstats(strength: str),
+    appearance: Appearance(gender: gender, race: race),
+    biography: Biography(alignment: align),
+    work: Work(occupation: occ),
   );
 
   await manager.saveHero(newHero);

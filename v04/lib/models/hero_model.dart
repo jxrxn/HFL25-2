@@ -1,178 +1,120 @@
 // lib/models/hero_model.dart
+//
+// Stark-typad hjältemodell med bakåtkompatibilitet.
+// - Fält: id, name, powerstats, appearance, biography, work
+// - fromJson hanterar både typad och "lös" JSON utan att krascha
+// - toShortString används i CLI-listor
+// - alignmentNormalized normaliserar alignment till: good / bad / neutral
+
+import 'package:v04/models/appearance.dart';
+import 'package:v04/models/biography.dart';
+import 'package:v04/models/powerstats.dart';
+import 'package:v04/models/work.dart';
+
+// Re-export för bekväm import från en plats
+export 'package:v04/models/powerstats.dart';
+export 'package:v04/models/appearance.dart';
+export 'package:v04/models/biography.dart';
+export 'package:v04/models/work.dart';
 
 class HeroModel {
   final String id;
   final String name;
+  final Powerstats? powerstats;
+  final Appearance? appearance;
+  final Biography? biography;
+  final Work? work;
 
-  /// Valfria undermappar (kan saknas i JSON)
-  final Map<String, dynamic>? powerstats;
-  final Map<String, dynamic>? biography;
-  final Map<String, dynamic>? appearance;
-  final Map<String, dynamic>? work;
-  final Map<String, dynamic>? connections;
-  final Map<String, dynamic>? image;
-
-  HeroModel({
+  const HeroModel({
     required this.id,
     required this.name,
     this.powerstats,
-    this.biography,
     this.appearance,
+    this.biography,
     this.work,
-    this.connections,
-    this.image,
   });
 
-  /// Liten hjälpare: gör om dynamiskt värde till `Map<String, dynamic>` om möjligt.
-  static Map<String, dynamic>? _asMap(dynamic v) {
-    if (v is Map) return Map<String, dynamic>.from(v);
-    return null;
-  }
-
-  /// Bygger modellen robust från JSON – tål t.ex. int id och saknade fält.
+  /// Primär, robust fromJson:
+  /// - Tål att nycklar saknas
+  /// - Tål att värden är "stringiga" (submodeller fixar)
+  /// - Returnerar aldrig null (utan en tom/partial HeroModel)
   factory HeroModel.fromJson(Map<String, dynamic> json) {
+    Powerstats? _ps(dynamic v) =>
+        (v is Map<String, dynamic>) ? Powerstats.fromJson(v) : null;
+    Appearance? _ap(dynamic v) =>
+        (v is Map<String, dynamic>) ? Appearance.fromJson(v) : null;
+    Biography? _bi(dynamic v) =>
+        (v is Map<String, dynamic>) ? Biography.fromJson(v) : null;
+    Work? _wo(dynamic v) =>
+        (v is Map<String, dynamic>) ? Work.fromJson(v) : null;
+
     return HeroModel(
-      id: json['id']?.toString() ?? '',
-      name: json['name']?.toString() ?? 'Okänd hjälte',
-      powerstats: _asMap(json['powerstats']),
-      biography: _asMap(json['biography']),
-      appearance: _asMap(json['appearance']),
-      work: _asMap(json['work']),
-      connections: _asMap(json['connections']),
-      image: _asMap(json['image']),
+      id: '${json['id'] ?? ''}',
+      name: '${json['name'] ?? ''}',
+      powerstats: _ps(json['powerstats']),
+      appearance: _ap(json['appearance']),
+      biography: _bi(json['biography']),
+      work: _wo(json['work']),
     );
   }
 
-  /// JSON-serialisering – hoppar över null-fält.
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      if (powerstats != null) 'powerstats': powerstats,
-      if (biography != null) 'biography': biography,
-      if (appearance != null) 'appearance': appearance,
-      if (work != null) 'work': work,
-      if (connections != null) 'connections': connections,
-      if (image != null) 'image': image,
-    };
-  }
+  /// Bakåtkompatibel inläsning om man uttryckligen vill signalera "lös" JSON.
+  /// (Praktiskt i tester som matar äldre struktur.)
+  factory HeroModel.fromLooseJson(Map<String, dynamic> json) =>
+      HeroModel.fromJson(json);
 
-  // ===== Bekväma getters =====
+  /// Hjälp för "stringigt" API-svar — samma som fromJson idag,
+  /// men separerad för tydlighet och framtida skillnader.
+  factory HeroModel.fromApiJson(Map<String, dynamic> json) =>
+      HeroModel.fromJson(json);
 
-  /// Tolkning av styrka som int (tål int/str/null i källan).
-  int get strengthAsInt => int.tryParse('${powerstats?['strength'] ?? 0}') ?? 0;
+  Map<String, dynamic> toJson() => {
+        'id'       : id,
+        'name'     : name,
+        if (powerstats != null) 'powerstats': powerstats!.toJson(),
+        if (appearance != null) 'appearance': appearance!.toJson(),
+        if (biography != null) 'biography' : biography!.toJson(),
+        if (work != null) 'work'           : work!.toJson(),
+      };
 
-  /// Säker bild-URL (bra inför ev. ASCII-visning).
-  String? get imageUrl {
-    final u = image?['url'];
-    return (u is String && u.trim().isNotEmpty) ? u : null;
-  }
+  // === Helpers ===
 
-  /// Alias-namn (kan vara en lista i biography).
-  List<String> get aliases {
-    final raw = biography?['aliases'];
-    if (raw is List) {
-      return raw.whereType<String>().toList();
-    }
-    return const [];
-  }
+  int get strength => powerstats?.strength ?? 0;
 
-  /// Försöker hitta en höjd i cm i appearance["height"] (t.ex. ["6'2","188 cm"]).
-  int? get heightCm {
-    final raw = appearance?['height'];
-    if (raw is List && raw.isNotEmpty) {
-      final cm = raw.firstWhere(
-        (e) => e is String && e.contains('cm'),
-        orElse: () => null,
-      );
-      if (cm is String) {
-        final m = RegExp(r'(\d+)').firstMatch(cm);
-        if (m != null) return int.tryParse(m.group(1)!);
-      }
-    }
-    return null;
+  /// Normaliserar alignment till en av: 'good' | 'bad' | 'neutral'
+  String get alignmentNormalized {
+    final raw = (biography?.alignment ?? '').toLowerCase().trim();
+    if (raw.isEmpty) return 'neutral';
+    if (raw.contains('good')) return 'good';
+    if (raw.contains('bad') || raw.contains('evil')) return 'bad';
+    return 'neutral';
     }
 
-  /// Försöker hitta vikt i kg i appearance["weight"] (t.ex. ["210 lb","95 kg"]).
-  int? get weightKg {
-    final raw = appearance?['weight'];
-    if (raw is List && raw.isNotEmpty) {
-      final kg = raw.firstWhere(
-        (e) => e is String && e.contains('kg'),
-        orElse: () => null,
-      );
-      if (kg is String) {
-        final m = RegExp(r'(\d+)').firstMatch(kg);
-        if (m != null) return int.tryParse(m.group(1)!);
-      }
-    }
-    return null;
-  }
-
-  // ===== Utskrifter =====
-
-  /// Kompakt representation.
+  /// Kompakt rad för CLI onlinesök / kortlistor
   String toShortString() {
-    final fullName = biography?['full-name'] ?? 'Okänt';
-    final gender = appearance?['gender'] ?? 'Okänt';
-    final strength = powerstats?['strength'] ?? '?';
-    return '$name ($fullName) | styrka: $strength | kön: $gender';
+    final fullName = biography?.fullName ?? 'Okänt';
+    final gender   = appearance?.gender ?? 'Okänt';
+    return "$name ($fullName) | styrka: $strength | kön: $gender";
   }
-
-  /// Mer informativ visning (det du vill se i listan).
-  String toPrettyString() {
-  final fullName = biography?['full-name'] ?? 'Okänt';
-  final gender = appearance?['gender'] ?? 'Okänt';
-  final race = appearance?['race'] ?? 'Okänt';
-  final strength = powerstats?['strength'] ?? '?';
-  final alignment = biography?['alignment'] ?? 'okänd';
-  final special = work?['occupation'] ?? 'ingen';
-  final h = heightCm != null ? '$heightCm cm' : '';
-  final w = weightKg != null ? '$weightKg kg' : '';
-  final hw = [h, w].where((x) => x.isNotEmpty).join(' / ');
-
-  final aliasPart = aliases.isNotEmpty
-      ? 'alias: ${aliases.take(2).join(", ")}'
-      : '';
-
-  final imagePart = imageUrl != null
-      ? 'bild: ${imageUrl!.split("/").last}'
-      : '';
-
-  final extras = [hw, aliasPart, imagePart]
-      .where((x) => x.isNotEmpty)
-      .join(' | ');
-
-  final mainInfo =
-    '$name ($fullName) | styrka: $strength | kön: $gender | '
-    'ursprung: $race | alignment: $alignment | special: $special';
-
-  return extras.isNotEmpty ? '$mainInfo | $extras' : mainInfo;
-}
 
   @override
-  String toString() => toPrettyString();
+  String toString() => 'HeroModel($name, id=$id)';
 
-  // ===== Frivilligt: immutabel uppdatering =====
   HeroModel copyWith({
     String? id,
     String? name,
-    Map<String, dynamic>? powerstats,
-    Map<String, dynamic>? biography,
-    Map<String, dynamic>? appearance,
-    Map<String, dynamic>? work,
-    Map<String, dynamic>? connections,
-    Map<String, dynamic>? image,
+    Powerstats? powerstats,
+    Appearance? appearance,
+    Biography? biography,
+    Work? work,
   }) {
     return HeroModel(
       id: id ?? this.id,
       name: name ?? this.name,
       powerstats: powerstats ?? this.powerstats,
-      biography: biography ?? this.biography,
       appearance: appearance ?? this.appearance,
+      biography: biography ?? this.biography,
       work: work ?? this.work,
-      connections: connections ?? this.connections,
-      image: image ?? this.image,
     );
   }
 }
