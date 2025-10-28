@@ -1,26 +1,18 @@
+// bin/herodex.dart
 import 'dart:io';
 
 import 'package:uuid/uuid.dart';
 
 import 'package:v04/env.dart';
 import 'package:v04/managers/hero_data_manager.dart';
-import 'package:v04/models/models.dart'; // ← barrel: exporterar alla modeller
+import 'package:v04/models/models.dart';             // barrel: alla modeller
 import 'package:v04/services/superhero_api_service.dart';
+import 'package:v04/ui/cli_utils.dart';              // färger + print* helpers + label()
+import 'package:v04/usecases/hero_usecases.dart';    // AlignmentFilter/SortOrder + logik
 
 final _uuid = Uuid();
 
-/// ====== Färger (ANSI) ======
-const String red = '\x1B[31m';
-const String green = '\x1B[32m';
-const String yellow = '\x1B[33m';
-const String cyan = '\x1B[36m';
-const String reset = '\x1B[0m';
-
-void printError(String msg) => print("$red$msg$reset");
-void printSuccess(String msg) => print("$green$msg$reset");
-void printInfo(String msg) => print("$cyan$msg$reset");
-void printWarn(String msg) => print("$yellow$msg$reset");
-
+/// ====== Banner (färger kommer från cli_utils.dart) ======
 void printBanner() {
   print(cyan);
   print(r'''
@@ -47,15 +39,11 @@ void printBanner() {
   print(reset);
 }
 
-
-
-// === Hjälp för färgade rubriker och namn ===
-String label(String text) => "$cyan$text:$reset";
-
+/// ====== Presentationshjälp (UI-lager) ======
 int _strengthOf(HeroModel h) => h.powerstats?.strength ?? 0;
 
 String _nameColor(HeroModel h) {
-  final a = h.alignmentNormalized;
+  final a = h.alignmentNormalized; // 'good' | 'bad' | 'neutral'
   if (a == 'bad') return red;
   if (a == 'good') return green;
   return cyan;
@@ -91,17 +79,7 @@ String heroLine(HeroModel h) {
          "${label('special')} $special";
 }
 
-// filter-helpers
-enum AlignmentFilter { all, heroes, villains, neutral }
-
-enum SortOrder { strength, nameAZ, nameZA }
-
-String _aln(HeroModel h) => h.alignmentNormalized; // 'good' | 'bad' | 'neutral'
-
-bool _isHero(HeroModel h)    => _aln(h) == 'good';
-bool _isVillain(HeroModel h) => _aln(h) == 'bad';
-bool _isNeutral(HeroModel h) => _aln(h) == 'neutral';
-
+/// ====== Inputhjälpare (CLI) ======
 AlignmentFilter _askAlignmentFilter() {
   printInfo("\nVälj filter för visning:");
   print("1. Alla");
@@ -130,20 +108,6 @@ SortOrder _askSortOrder() {
   }
 }
 
-// ============================================================
-// HERO HANDLING — via HeroDataManager
-// ============================================================
-
-final manager = HeroDataManager();
-
-Future<bool> _existsByNameOrId(String name, String id) async {
-  final list = await manager.getHeroList();
-  final norm = name.trim().toLowerCase();
-  return list.any((h) =>
-    h.id == id || h.name.trim().toLowerCase() == norm
-  );
-}
-
 int _askIntInRange(String prompt, {required int min, required int max, required int fallback}) {
   while (true) {
     stdout.write("$prompt ($min–$max): ");
@@ -151,10 +115,19 @@ int _askIntInRange(String prompt, {required int min, required int max, required 
     final v = int.tryParse(raw);
     if (v != null && v >= min && v <= max) return v;
     if (raw.isEmpty) return fallback; // Enter ⇒ fallback inom intervallet
-    print("⚠️  Ogiltigt värde. Ange ett heltal mellan $min och $max, eller tryck Enter för $fallback.");
+    printWarn("⚠️  Ogiltigt värde. Ange heltal $min–$max eller Enter för $fallback.");
   }
 }
 
+/// ====== Use cases / manager ======
+final manager = HeroDataManager();
+final useCases = HeroUseCases(manager);
+
+Future<bool> _existsByNameOrId(String name, String id) {
+  return useCases.existsByNameOrId(name, id);
+}
+
+/// ====== Kommandon ======
 Future<void> addHero() async {
   stdout.write("Ange nytt hjältenamn: ");
   final name = stdin.readLineSync()?.trim();
@@ -187,67 +160,41 @@ Future<void> addHero() async {
     work: Work(occupation: occ),
   );
 
-  await manager.saveHero(newHero);
-  printSuccess("✅ Hjälten '$name' har lagts till!");
+  final saved = await useCases.addHero(newHero);
+  if (saved) {
+    printSuccess("✅ Hjälten '$name' har lagts till!");
+  } else {
+    printWarn("⚠️  Kunde inte spara (dubblett eller ogiltiga fält).");
+  }
 }
 
 Future<void> listHeroes() async {
-  final heroes = await manager.getHeroList();
-  if (heroes.isEmpty) {
+  final all = await manager.getHeroList();
+  if (all.isEmpty) {
     printWarn("Inga hjältar sparade ännu.");
     return;
   }
 
-  // === 1. Filtrera efter alignment ===
+  // 1) Fråga efter filter + sort
   final filter = _askAlignmentFilter();
-
-  Iterable<HeroModel> filtered = heroes;
-  switch (filter) {
-    case AlignmentFilter.heroes:
-      filtered = heroes.where(_isHero);
-      break;
-    case AlignmentFilter.villains:
-      filtered = heroes.where(_isVillain);
-      break;
-    case AlignmentFilter.neutral:
-      filtered = heroes.where(_isNeutral);
-      break;
-    case AlignmentFilter.all:
-      // lämna som det är
-      break;
-  }
-
-  // === 2. Välj sorteringsordning ===
   final sortOrder = _askSortOrder();
 
-  final sorted = [...filtered];
-  switch (sortOrder) {
-    case SortOrder.nameAZ:
-      sorted.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-      break;
-    case SortOrder.nameZA:
-      sorted.sort((a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()));
-      break;
-    case SortOrder.strength:
-      sorted.sort((a, b) => _strengthOf(b).compareTo(_strengthOf(a)));
-      break;
-  }
+  // 2) Hämta listan via use case (logik utanför CLI)
+  final sorted = await useCases.listHeroes(filter: filter, sortOrder: sortOrder);
 
-  // === 3. Titel för visning ===
+  // 3) Titel
   final title = switch (filter) {
     AlignmentFilter.heroes   => "Hjältar (good)",
     AlignmentFilter.villains => "Skurkar (bad)",
     AlignmentFilter.neutral  => "Neutrala",
     AlignmentFilter.all      => "Alla",
   };
-
   final sortLabel = switch (sortOrder) {
     SortOrder.nameAZ   => " (A–Ö)",
     SortOrder.nameZA   => " (Ö–A)",
     SortOrder.strength => " (styrka)",
   };
 
-  // === 4. Utskrift ===
   if (sorted.isEmpty) {
     printWarn("Inga poster matchade filtret.");
     return;
@@ -258,7 +205,6 @@ Future<void> listHeroes() async {
     print(heroLine(h));
   }
 }
-
 
 Future<void> deleteHero() async {
   final heroes = await manager.getHeroList();
@@ -292,8 +238,12 @@ Future<void> deleteHero() async {
     return;
   }
 
-  await manager.deleteHeroById(hero.id);
-  printSuccess("🗑️  Hjälten '${hero.name}' borttagen.");
+  final ok = await useCases.deleteHeroById(hero.id);
+  if (ok) {
+    printSuccess("🗑️  Hjälten '${hero.name}' borttagen.");
+  } else {
+    printError("⚠️  Något gick fel vid borttagning.");
+  }
 }
 
 Future<void> searchHeroesOnline() async {
@@ -340,8 +290,12 @@ Future<void> searchHeroesOnline() async {
       return;
     }
 
-    await manager.saveHero(selected);
-    printSuccess("✅ '${selected.name}' sparad i lokal lista.");
+    final saved = await manager.saveUnique(selected);
+    if (saved) {
+      printSuccess("✅ '${selected.name}' sparad i lokal lista.");
+    } else {
+      printWarn("⚠️  Kunde inte spara (dubblett/ogiltiga fält).");
+    }
   } finally {
     api.close();
   }
@@ -355,7 +309,7 @@ Future<void> main(List<String> args) async {
   Env.load();
   printBanner();
 
-  bool running = true;
+  var running = true;
   while (running) {
     printInfo("\n=== HeroDex 3000 ===");
     print("1. Lägg till hjälte");
@@ -366,10 +320,18 @@ Future<void> main(List<String> args) async {
     stdout.write("Välj: ");
 
     switch (stdin.readLineSync()?.trim()) {
-      case '1': await addHero(); break;
-      case '2': await listHeroes(); break;
-      case '3': await searchHeroesOnline(); break;
-      case '4': await deleteHero(); break;
+      case '1':
+        await addHero();
+        break;
+      case '2':
+        await listHeroes();
+        break;
+      case '3':
+        await searchHeroesOnline();
+        break;
+      case '4':
+        await deleteHero();
+        break;
       case '5':
         printSuccess("💾 Avslutar HeroDex 3000...");
         running = false;
