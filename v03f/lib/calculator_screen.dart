@@ -1,112 +1,73 @@
+// lib/calculator_screen.dart
 import 'package:flutter/material.dart';
-import 'calc_button.dart';
+import 'ui/display_widget.dart';
+import 'ui/button_grid.dart';
+import 'logic/calculator_engine.dart';
 
 class CalculatorScreen extends StatefulWidget {
-  const CalculatorScreen({super.key});
+  const CalculatorScreen({super.key, this.onToggleTheme});
+  final VoidCallback? onToggleTheme;
 
   @override
   State<CalculatorScreen> createState() => _CalculatorScreenState();
 }
 
 class _CalculatorScreenState extends State<CalculatorScreen> {
-  String display = '0';
-  double? firstOperand;
-  String? operator;
-  bool shouldReset = false;
+  late final CalculatorEngine engine;
 
-  void onButtonPressed(String value) {
-    setState(() {
-      if ('0123456789'.contains(value)) {
-        if (shouldReset || display == '0') {
-          display = value;
-          shouldReset = false;
-        } else {
-          display += value;
-        }
-        return;
-      }
-      if ('+-*/'.contains(value)) {
-        firstOperand = double.tryParse(display);
-        operator = value;
-        shouldReset = true;
-        return;
-      }
-      if (value == '=') {
-        final second = double.tryParse(display);
-        if (firstOperand != null && operator != null && second != null) {
-          switch (operator) {
-            case '+':
-              display = (firstOperand! + second).toString();
-              break;
-            case '-':
-              display = (firstOperand! - second).toString();
-              break;
-            case '*':
-              display = (firstOperand! * second).toString();
-              break;
-            case '/':
-              display = (second == 0) ? 'Error' : (firstOperand! / second).toString();
-              break;
-          }
-          firstOperand = null;
-          operator = null;
-          shouldReset = true;
-        }
-        return;
-      }
-      if (value == 'C') {
-        display = '0';
-        firstOperand = null;
-        operator = null;
-        shouldReset = false;
-        return;
-      }
-    });
+  @override
+  void initState() {
+    super.initState();
+    engine = CalculatorEngine();
+  }
+
+  void _onButtonPressed(String value) {
+    setState(() => engine.input(value));
   }
 
   @override
   Widget build(BuildContext context) {
-    final labels = [
-      '7', '8', '9', '/',
-      '4', '5', '6', '*',
-      '1', '2', '3', '-',
-      'C', '0', '=', '+',
+    const labels = [
+      '7','8','9','/',
+      '4','5','6','*',
+      '1','2','3','-',
+      'C','0','=','+',
     ];
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Miniräknare')),
+      appBar: AppBar(
+        title: const Text('Miniräknare'),
+        actions: [
+          IconButton(
+            tooltip: isDark ? 'Byt till ljust tema' : 'Byt till mörkt tema',
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            onPressed: widget.onToggleTheme,
+          ),
+        ],
+      ),
       body: Column(
         children: [
           // Display
           Expanded(
-            child: Container(
-              alignment: Alignment.bottomRight,
+            child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Text(
-                display,
-                key: const Key('display'),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+              child: Align(
+                alignment: Alignment.bottomRight,
+                child: DisplayWidget(
+                  key: const Key('display'),
+                  text: engine.display,                 // <-- ändrat från value:
+                ),
               ),
             ),
           ),
           // Grid med knappar
           Expanded(
             flex: 2,
-            child: GridView.count(
-              crossAxisCount: 4,
-              padding: const EdgeInsets.all(8),
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              children: [
-                for (final label in labels)
-                  CalcButton(
-                    buttonKey: Key('btn-$label'),     // <-- ändrat (tidigare: key:)
-                    label: label,
-                    onTap: () => onButtonPressed(label),
-                  ),
-              ],
+            child: ButtonGrid(
+              labels: labels,
+              onTap: _onButtonPressed,                  // <-- inga extra named params
             ),
           ),
         ],

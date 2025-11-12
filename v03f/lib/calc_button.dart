@@ -1,10 +1,9 @@
+// lib/ui/calc_button.dart
 import 'package:flutter/material.dart';
 
 class CalcButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
-
-  /// Ny: key för *den tryckbara knappen*
   final Key? buttonKey;
 
   const CalcButton({
@@ -14,22 +13,46 @@ class CalcButton extends StatelessWidget {
     this.buttonKey,
   });
 
+  bool get _isOp    => '+-*/'.contains(label);
+  bool get _isClear => label == 'C';
+
   @override
   Widget build(BuildContext context) {
-    final isOp = '+-*/'.contains(label);
-    final isClear = label == 'C';
+    final cs = Theme.of(context).colorScheme;
 
     return ElevatedButton(
-      key: buttonKey,                    // <-- lägg nyckeln här
+      key: buttonKey,
       onPressed: onTap,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: isClear
-            ? Colors.red.shade700
-            : (isOp ? Colors.deepPurple : Colors.grey[800]),
-        foregroundColor: Colors.white,
-        textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        padding: const EdgeInsets.symmetric(vertical: 18),
+      style: ButtonStyle(
+        // Bakgrundsfärg: röd för C, primär för operator, neutral för siffra
+        backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+          if (_isClear) return cs.errorContainer;
+          if (_isOp)    return cs.primaryContainer;
+          return cs.surfaceContainerHighest;
+        }),
+        // Textfärg: kontrast mot bakgrunden
+        foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+          if (_isClear) return cs.onErrorContainer;
+          if (_isOp)    return cs.onPrimaryContainer;
+          return cs.onSurface;
+        }),
+        // Ripple/hover (android/iOS använder pressed)
+        overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(WidgetState.pressed)) {
+            // ersätter withOpacity(0.08)
+            return Colors.white.withValues(alpha: 0.08);
+          }
+          return null;
+        }),
+        textStyle: const WidgetStatePropertyAll(
+          TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+        ),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        padding: const WidgetStatePropertyAll(
+          EdgeInsets.symmetric(vertical: 18),
+        ),
       ),
       child: Text(label),
     );
