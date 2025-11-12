@@ -14,7 +14,6 @@ En miniräknare byggd i **Flutter** — med live-uträkning, ljus/mörk-läge, t
 - **Långtryck på `C`:** nollställer allt (AC).  
   Kort tryck raderar senaste tecken.  
 - **Separat logik:** all beräkningslogik finns i `calculator_engine.dart` för tydlig separation mellan UI och logik.  
-- **Kvadratiska knappar:** konsekvent layout med tydliga operatorer (`÷ × − +`).  
 - **Tusentalsavgränsning:** stora tal visas som `1 234 567`.  
 - **Kopiera resultat:** tryck på visningen för att kopiera talet till urklipp.  
 - **Dark / Light mode** enligt systemtema eller manuellt via AppBar-knappen.  
