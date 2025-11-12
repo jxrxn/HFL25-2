@@ -36,33 +36,42 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Display överst (en enda)
-            Expanded(
-              child: DisplayWidget(
-                key: const Key('display-wrapper'),
-                text: engine.display,
-              ),
+      body: Column(
+        children: [
+          // Stora displayen (live)
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: DisplayWidget(text: engine.display)),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: Text(
+                    engine.strip,
+                    textAlign: TextAlign.right,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65)
+                              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
+                          letterSpacing: 0.5,
+                        ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+              ],
             ),
+          ),
 
-            // Knapprutnätet (en enda)
-            Expanded(
-              flex: 2,
-              child: ButtonGrid(
-                // Kort tryck på en knapp
-                onTap: (value) {
-                  setState(() => engine.input(value));
-                },
-                // Långtryck på C = full återställning (AC)
-                onLongClear: () {
-                  setState(() => engine.clearAll());
-                },
-              ),
+          // Grid
+          Expanded(
+            flex: 2,
+            child: ButtonGrid(
+              onTap: (v) => setState(() => engine.input(v)),
+              onLongClear: () => setState(() => engine.clearAll()),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
