@@ -1,6 +1,6 @@
 # Miniräknare
 
-En miniräknare byggd i **Flutter** — med live-uträkning, ljus/mörk-läge, tusentalsavgränsning och intelligent hantering av procent, operatorer och decimaler.
+En miniräknare byggd i **Flutter** — med live-uträkning, ljust/mörkt-läge, tusentalsavgränsning och intelligent hantering av procent, operatorer och decimaler.
 
 ---
 
