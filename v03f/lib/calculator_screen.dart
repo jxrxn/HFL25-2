@@ -1,8 +1,8 @@
 // lib/calculator_screen.dart
 import 'package:flutter/material.dart';
+import 'logic/calculator_engine.dart';
 import 'ui/display_widget.dart';
 import 'ui/button_grid.dart';
-import 'logic/calculator_engine.dart';
 
 class CalculatorScreen extends StatefulWidget {
   const CalculatorScreen({super.key, this.onToggleTheme});
@@ -21,19 +21,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     engine = CalculatorEngine();
   }
 
-  void _onButtonPressed(String value) {
-    setState(() => engine.input(value));
-  }
-
   @override
   Widget build(BuildContext context) {
-    const labels = [
-      '7','8','9','/',
-      '4','5','6','*',
-      '1','2','3','-',
-      'C','0','=','+',
-    ];
-
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -47,30 +36,33 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Display
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Align(
-                alignment: Alignment.bottomRight,
-                child: DisplayWidget(
-                  key: const Key('display'),
-                  text: engine.display,                 // <-- ändrat från value:
-                ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Display överst (en enda)
+            Expanded(
+              child: DisplayWidget(
+                key: const Key('display-wrapper'),
+                text: engine.display,
               ),
             ),
-          ),
-          // Grid med knappar
-          Expanded(
-            flex: 2,
-            child: ButtonGrid(
-              labels: labels,
-              onTap: _onButtonPressed,                  // <-- inga extra named params
+
+            // Knapprutnätet (en enda)
+            Expanded(
+              flex: 2,
+              child: ButtonGrid(
+                // Kort tryck på en knapp
+                onTap: (value) {
+                  setState(() => engine.input(value));
+                },
+                // Långtryck på C = full återställning (AC)
+                onLongClear: () {
+                  setState(() => engine.clearAll());
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
