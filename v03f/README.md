@@ -41,8 +41,30 @@ v03f/
  ```
 
 ## Installation
-	1.	Klona projektet
-  ```bash
+
+1.	Klona projektet
+
+```bash
 git clone https://github.com/jxrxn/HFL25-2.git
 cd HFL25-2/v03f
 ```
+
+2.	Installera beroenden
+
+```bash
+flutter pub get
+```
+
+3.	Kör appen
+
+```bash
+flutter run
+```
+
+4.	Kör tester
+
+```bash
+flutter test
+```
+
+
