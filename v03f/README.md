@@ -21,7 +21,7 @@ En miniräknare byggd i **Flutter** — med live-uträkning, ljus/mörk-läge, t
 
 ---
 
-## 🧩 Struktur
+## Struktur
 
 ```text
 v03f/
