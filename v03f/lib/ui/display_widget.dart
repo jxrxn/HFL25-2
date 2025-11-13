@@ -1,78 +1,103 @@
 // lib/ui/display_widget.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-class DisplayWidget extends StatefulWidget {
-  final String text;
-  const DisplayWidget({super.key, required this.text});
+class DisplayWidget extends StatelessWidget {
+  final String valueText;
+  final String stripText;
 
-  @override
-  State<DisplayWidget> createState() => _DisplayWidgetState();
-}
+  const DisplayWidget({
+    super.key,
+    required this.valueText,
+    required this.stripText,
+  });
 
-class _DisplayWidgetState extends State<DisplayWidget> {
-  final _controller = ScrollController();
+  // Lägg in tunna mellanslag som tusentalsavgränsare i heltalsdelen.
+  // Format vi stöttar här: -1234, -1234.56, 1234, 1234.56
+  String _groupThousands(String s) {
+    final numberPattern = RegExp(r'^-?\d+(\.\d+)?$');
+    if (!numberPattern.hasMatch(s)) return s; // t.ex. "Error" – lämna orörd
 
-  @override
-  void didUpdateWidget(covariant DisplayWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.text != oldWidget.text) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_controller.hasClients) _controller.jumpTo(0);
-      });
+    final negative = s.startsWith('-');
+    var body = negative ? s.substring(1) : s;
+
+    final parts = body.split('.');
+    var intPart = parts[0];
+    final fracPart = parts.length > 1 ? '.${parts[1]}' : '';
+
+    final buf = StringBuffer();
+    var count = 0;
+
+    // Bygg från höger → vänster
+    for (var i = intPart.length - 1; i >= 0; i--) {
+      buf.write(intPart[i]);
+      count++;
+      if (count == 3 && i != 0) {
+        buf.write('\u2009'); // tunt mellanrum
+        count = 0;
+      }
     }
-  }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+    // Vänd tillbaka
+    final reversed = buf.toString().runes.toList().reversed;
+    final groupedInt = String.fromCharCodes(reversed);
 
-  void _copyToClipboard(BuildContext context) {
-    if (widget.text.trim().isEmpty) return;
-
-    Clipboard.setData(ClipboardData(text: widget.text));
-    final scheme = Theme.of(context).colorScheme;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: scheme.inverseSurface,
-        content: Text(
-          'Kopierat till urklipp',
-          style: TextStyle(color: scheme.onInverseSurface),
-        ),
-        duration: const Duration(seconds: 1),
-      ),
-    );
+    final sign = negative ? '-' : '';
+    return '$sign$groupedInt$fracPart';
   }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
-    return GestureDetector(
-      onTap: () => _copyToClipboard(context),
-      child: Container(
-        alignment: Alignment.bottomLeft,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        color: scheme.surfaceContainerHighest,
-        child: SingleChildScrollView(
-          controller: _controller,
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: Text(
-            widget.text,
-            key: const Key('display'),
-            textAlign: TextAlign.left,
-            style: TextStyle(
-              fontSize: 48,
-              fontWeight: FontWeight.bold,
-              color: scheme.onSurface,
+    final stripColor = isDark
+        ? scheme.onSurface.withValues(alpha: 0.7)
+        : scheme.onSurface.withValues(alpha: 0.6);
+
+    final groupedValue = _groupThousands(valueText);
+
+    return Container(
+      width: double.infinity,
+      color: scheme.surfaceContainerHighest,
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Smala remsan med uttrycket
+          Text(
+            stripText,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.right,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: stripColor,
+              letterSpacing: 0.5,
             ),
           ),
-        ),
+          const SizedBox(height: 8),
+          // Stora talet, nere till höger, kan scrollas horisontellt
+          Expanded(
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: SingleChildScrollView(
+                reverse: true,
+                scrollDirection: Axis.horizontal,
+                child: Text(
+                  groupedValue,
+                  key: const Key('display'),
+                  maxLines: 1,
+                  softWrap: false,
+                  style: theme.textTheme.displayMedium?.copyWith(
+                    fontSize: 38,
+                    fontWeight: FontWeight.bold,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

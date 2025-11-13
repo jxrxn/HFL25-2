@@ -23,7 +23,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -38,32 +39,15 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       ),
       body: Column(
         children: [
-          // Stora displayen (live)
+          // Övre panel: remsa + stort värde, full bredd
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(child: DisplayWidget(text: engine.display)),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                  child: Text(
-                    engine.strip,
-                    textAlign: TextAlign.right,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65)
-                              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
-                          letterSpacing: 0.5,
-                        ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                ),
-              ],
+            child: DisplayWidget(
+              valueText: engine.display,
+              stripText: engine.strip,
             ),
           ),
 
-          // Grid
+          // Nederdel: knapparna
           Expanded(
             flex: 2,
             child: ButtonGrid(
