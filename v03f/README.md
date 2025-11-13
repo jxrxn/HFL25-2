@@ -21,23 +21,20 @@ En miniräknare byggd i **Flutter** — med live-uträkning, ljust/mörkt-läge,
 - **Långt tryck på `C`:** nollställer allt (AC).  
 - **Kort tryck på `C`:** raderar senaste tecken.  
 - **Tusentalsavgränsning:** stora tal visas som `1 234 567`.  
-- **Kopiera resultat:** tryck på visningen för att kopiera talet till urklipp.  
+- **Kopiera resultat:** klicka på resultatet för att kopiera talet till urklipp.  
 - **Dark / Light mode** enligt systemtema eller manuellt via AppBar-knappen.
 
 ---
 
-## Live-calculation preview
+## Live-uträkning
 
 När du matar in ett uttryck, visas resultatet direkt i huvuddisplayen medan du skriver.
 Exempel:
-	•	Skriver du: 20 + 3 × 2
-så visas 26 redan innan du tryckt =.
-	•	Vid operatorkedjor visas det korrekta resultatet enligt operatorprioritet.
-
-Previewn stängs av när du:
-	•	just gjort =
-	•	raderar till tomt uttryck
-	•	eller är i ett fel-tillstånd.
+- Skriver du: `20 + 3 × 2` så visas 26 redan innan du tryckt =.
+- Remsan visar alltid det uttryck du bygger upp.
+- Efter = sparas hela uttrycket: `20 + 3 × 2 = 26`
+- Om du räknar vidare från resultatet så fortsätter remsan korrekt, t.ex.:
+`26 + 4`
 
 ---  
 
@@ -47,7 +44,6 @@ Miniräknaren följer samma säkerhetsgränser som iOS och Android för att undv
 	•	Max säkert heltal: 999 999 999 999 999 (15 siffror)
 	•	Max total längd: 20 tecken inkl. decimaler
 	•	Resultat som överskrider det visas inte, utan triggar felhantering.
-
 Det gör räknaren stabil även vid stora tal.
 
 ---
