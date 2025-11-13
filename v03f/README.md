@@ -29,7 +29,7 @@ En miniräknare byggd i **Flutter** — med live-uträkning, ljust/mörkt-läge,
 ## Live-uträkning
 
 När du matar in ett uttryck, visas resultatet direkt i huvuddisplayen medan du skriver.
-- Skriver du: `20 + 3 × 2` så visas 26 redan innan du tryckt =.
+- Skriver du: `20 + 3 × 2` så visas 26 redan innan du tryckt `=`.
 - Remsan visar alltid det uttryck du bygger upp.
 - Efter = sparas hela uttrycket: `20 + 3 × 2 = 26`
 - Om du räknar vidare från resultatet så fortsätter remsan korrekt, t.ex.:
