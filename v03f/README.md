@@ -18,7 +18,7 @@ En miniräknare byggd i **Flutter** — med live-uträkning, ljust/mörkt-läge,
 | 100 ÷ 10 %       | 100 ÷ 0.10                | 1000     |  
 | 10 %             | 10 ÷ 100                  | 0.1      |  
 ```
-- **Långt tryck på `C`:** nollställer allt `(AC)`.  
+- **Långt tryck på `C`:** nollställer allt (`AC`).  
 - **Kort tryck på `C`:** raderar senaste tecken.  
 - **Tusentalsavgränsning:** stora tal visas som `1 234 567`.  
 - **Kopiera resultat:** klicka på resultatet för att kopiera talet till urklipp.  
