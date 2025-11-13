@@ -7,7 +7,8 @@ En miniräknare byggd i **Flutter** — med live-uträkning, ljust/mörkt-läge,
 ## Funktioner
 
 - **Live-uträkning:** resultatet uppdateras direkt medan du skriver.  
-- **Visuell remsa:** den aktuella uträkningen visas i en diskret remsa ovanför resultatet. - **Procentuträkning:**
+- **Remsa:** den aktuella uträkningen visas i en diskret remsa ovanför resultatet.  
+- **Procentuträkning:**
 ```text
 | Uträkning        | Tolkas som                | Resultat |  
 |------------------|---------------------------|----------|  
