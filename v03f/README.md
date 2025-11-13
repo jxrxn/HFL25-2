@@ -13,7 +13,7 @@ En miniräknare byggd i **Flutter** — med live-uträkning, ljust/mörkt-läge,
 - **Tusentalsavgränsning:** stora tal visas som `1 234 567`.  
 - **Kopiera resultat:** klicka på resultatet för att kopiera talet till urklipp.  
 - **Dark / Light mode** enligt systemtema eller manuellt via AppBar-knappen.
-- - **Procentuträkning:**
+- **Procentuträkning:**
 ```text
 | Uträkning        | Tolkas som                | Resultat |  
 |------------------|---------------------------|----------|  
