@@ -39,10 +39,10 @@ När du matar in ett uttryck, visas resultatet direkt i huvuddisplayen medan du 
 
 ## Begränsningar
 
-Miniräknaren följer samma säkerhetsgränser som iOS och Android för att undvika fel i flyttalsberäkningar:
-	•	Max säkert heltal: 999 999 999 999 999 (15 siffror)
-	•	Max total längd: 20 tecken inkl. decimaler
-	•	Resultat som överskrider det visas inte, utan triggar felhantering.
+Miniräknaren följer samma säkerhetsgränser som iOS och Android för att undvika fel i flyttalsberäkningar:  
+	•	Max säkert heltal: 999 999 999 999 999 (15 siffror)  
+	•	Max total längd: 20 tecken inkl. decimaler  
+	•	Resultat som överskrider det visas inte, utan triggar felhantering.  
 Det gör räknaren stabil även vid stora tal.
 
 ---
