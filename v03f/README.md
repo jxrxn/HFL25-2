@@ -9,13 +9,13 @@ En miniräknare byggd i **Flutter** — med live-uträkning, ljust/mörkt-läge,
 - **Live-uträkning:** resultatet uppdateras direkt medan du skriver.  
 - **Visuell remsa:** den aktuella uträkningen visas i en diskret remsa ovanför resultatet.  - **Procentuträkning:**
 ```text
-| Uträkning       | Tolkas som               | Resultat |
-|------------------|---------------------------|----------|
-| 50 + 10 %        | 50 + (10% av 50)          | 55       |
-| 50 - 10 %        | 50 - (10% av 50)          | 45       |
-| 100 × 10 %       | 100 × 0.10                | 10       |
-| 100 ÷ 10 %       | 100 ÷ 0.10                | 1000     |
-| 10 %             | 10 ÷ 100                  | 0.1      |
+| Uträkning       | Tolkas som               | Resultat |  
+|------------------|---------------------------|----------|  
+| 50 + 10 %        | 50 + (10% av 50)          | 55       |  
+| 50 - 10 %        | 50 - (10% av 50)          | 45       |  
+| 100 × 10 %       | 100 × 0.10                | 10       |  
+| 100 ÷ 10 %       | 100 ÷ 0.10                | 1000     |  
+| 10 %             | 10 ÷ 100                  | 0.1      |  
 ```
 - **Långt tryck på `C`:** nollställer allt (AC).  
 - **Kort tryck på `C`:** raderar senaste tecken.  
