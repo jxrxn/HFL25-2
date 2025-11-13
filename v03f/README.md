@@ -7,16 +7,41 @@ En miniräknare byggd i **Flutter** — med live-uträkning, ljust/mörkt-läge,
 ## Funktioner
 
 - **Live-uträkning:** resultatet uppdateras direkt medan du skriver.  
-- **Visuell remsa:** den aktuella uträkningen visas i en diskret remsa under resultatet.  
+- **Visuell remsa:** den aktuella uträkningen visas i en diskret remsa ovanför resultatet.  
 - **Smart procent:**  
   - `12 / 10 %` → `120`  
   - `50 + 10 %` → `55`  
-- **Långtryck på `C`:** nollställer allt (AC).  
+- **Långt tryck på `C`:** nollställer allt (AC).  
   Kort tryck raderar senaste tecken.  
-- **Separat logik:** all beräkningslogik finns i `calculator_engine.dart` för tydlig separation mellan UI och logik.  
 - **Tusentalsavgränsning:** stora tal visas som `1 234 567`.  
 - **Kopiera resultat:** tryck på visningen för att kopiera talet till urklipp.  
-- **Dark / Light mode** enligt systemtema eller manuellt via AppBar-knappen.  
+- **Dark / Light mode** enligt systemtema eller manuellt via AppBar-knappen.
+
+---
+
+## Live-calculation preview
+
+När du matar in ett uttryck, visas resultatet direkt i huvuddisplayen medan du skriver.
+Exempel:
+	•	Skriver du: 20 + 3 × 2
+så visas 26 redan innan du tryckt =.
+	•	Vid operatorkedjor visas det korrekta resultatet enligt operatorprioritet.
+
+Previewn stängs av när du:
+	•	just gjort =
+	•	raderar till tomt uttryck
+	•	eller är i ett fel-tillstånd.
+
+---  
+
+## Begränsningar
+
+Miniräknaren följer samma säkerhetsgränser som iOS och Android för att undvika fel i flyttalsberäkningar:
+	•	Max säkert heltal: 999 999 999 999 999 (15 siffror)
+	•	Max total längd: 20 tecken inkl. decimaler
+	•	Resultat som överskrider det visas inte, utan triggar felhantering.
+
+Det gör räknaren stabil även vid stora tal.
 
 ---
 
