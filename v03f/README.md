@@ -7,7 +7,7 @@ En miniräknare byggd i **Flutter** — med live-uträkning, ljust/mörkt-läge,
 ## Funktioner
 
 - **Live-uträkning:** resultatet uppdateras direkt medan du skriver.  
-- **Remsa:** den aktuella uträkningen visas i en diskret remsa ovanför resultatet.  
+- **Remsa:** den aktuella uträkningen visas i en remsa ovanför resultatet.  
 - **Långt tryck på `C`:** nollställer allt (`AC`).  
 - **Kort tryck på `C`:** raderar senaste tecken.  
 - **Tusentalsavgränsning:** stora tal visas som `1 234 567`.  
