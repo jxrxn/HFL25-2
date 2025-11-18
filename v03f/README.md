@@ -1,19 +1,40 @@
 # Miniräknare
 
-En miniräknare byggd i **Flutter** — med live-uträkning, ljust/mörkt-läge, tusentalsavgränsning och intelligent hantering av procent, operatorer och decimaler.
+En precisionssäker miniräknare byggd i **Flutter** — med live-uträkning, mörkt/ljust läge, tusentalsavgränsning, korrekt procentlogik och **exakt Decimal-aritmetik** (ingen flyttalsavrundning som med `double` i tidigare version).
 
 ---
 
 ## Funktioner
 
-- **Live-uträkning:** resultatet uppdateras direkt medan du skriver.  
-- **Remsa:** den aktuella uträkningen visas i en remsa ovanför resultatet.  
-- **Långt tryck på `C`:** nollställer allt (`AC`).  
-- **Kort tryck på `C`:** raderar senaste tecken.  
-- **Tusentalsavgränsning:** stora tal visas som `1 234 567`.  
-- **Kopiera resultat:** klicka på resultatet för att kopiera talet till urklipp.  
-- **Dark / Light mode** enligt systemtema eller manuellt via AppBar-knappen.
-- **Procentuträkning:**
+### 🔢 Exakt beräkning med `Decimal`
+Räknaren använder **Decimal** i stället för `double`, vilket eliminerar klassiska flyttalsfel  
+som `999 999 999.2 → 999 999 999.200000047684`.
+
+Det betyder:
+- 100% stabila resultat  
+- inga dolda avrundningar  
+- exakt procenthantering  
+- konsekvent live-uträkning
+
+---
+
+### Live-uträkning
+Resultatet uppdateras direkt medan du skriver.  
+Exempel:  
+`20 + 3 × 2` → visar **26** löpande, även innan du tryckt `=`.
+
+---
+
+### Beräkningshistorik
+Den övre remsan visar alltid aktuellt uttryck:
+- Visar siffror och operatorer så fort de skrivs  
+- Rullas automatiskt till höger för att visa senaste delen  
+- Visar även kompletta uttryck efter `=`:  
+  `20 + 3 × 2 = 26`
+
+---
+
+### Procentlogik (korrekt matematiskt beteende)
 ```text
 | Uträkning        | Tolkas som                | Resultat |  
 |------------------|---------------------------|----------|  
@@ -26,26 +47,34 @@ En miniräknare byggd i **Flutter** — med live-uträkning, ljust/mörkt-läge,
 
 ---
 
-## Live-uträkning
-
-När du matar in ett uttryck, visas resultatet direkt i huvuddisplayen medan du skriver.
-- Skriver du: `20 + 3 × 2` så visas 26 redan innan du tryckt `=`.
-- Remsan visar alltid det uttryck du bygger upp.
-- Efter = sparas hela uttrycket: `20 + 3 × 2 = 26`
-- Om du räknar vidare från resultatet så fortsätter remsan korrekt, t.ex.:
-`26 + 4`
-
----  
-
-## Begränsningar
-
-Miniräknaren följer samma säkerhetsgränser som iOS och Android för att undvika fel i flyttalsberäkningar:  
-- Max säkert heltal: 999 999 999 999 999 (15 siffror)  
-- Max total längd: 20 tecken inkl. decimaler  
-- Resultat som överskrider det visas inte, utan triggar felhantering.  
-Det gör räknaren stabil även vid stora tal.
+### Rensa & redigera
+-	Kort tryck på C: backspace
+-	Långt tryck på C: allt rensas (AC)
+-	Decimaltecken komma, men visas som punkt i remsa och resultat
 
 ---
+
+### Kopiera resultat
+
+Tryck på stora talet för att kopiera till urklipp.
+
+---
+
+### Mörkt & ljust tema
+
+Automatiskt efter systemtema, eller manuellt via AppBar-knappen.
+
+---
+
+### Begränsningar (för stabilitet)
+
+Räknaren har säkra gränser inspirerade av iOS och Android:
+	•	Max heltalsstorlek: 999 999 999 999 999 (15 siffror)
+	•	Max totala teckenlängd: 20
+	•	För stora tal returnerar Error
+	•	Detta garanterar snabb och stabil
+
+ ---
 
 ## Struktur
 
@@ -62,11 +91,13 @@ v03f/
  │       └─ button_grid.dart
  ├─ test/
  │   └─ calculator_live_test.dart
+ │   ├─ calculator_strip_test.dart
  │   └─ calculator_test.dart
  └─ pubspec.yaml
  ```
-
-## Installation
+ ---
+ 
+ ## Installation
 
 1.	Klona projektet
 
