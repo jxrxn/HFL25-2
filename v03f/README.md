@@ -50,7 +50,7 @@ Den övre remsan visar alltid aktuellt uttryck:
 ### Rensa & redigera
 -	Kort tryck på C: backspace
 -	Långt tryck på C: allt rensas (AC)
--	Decimaltecken komma, men visas som punkt i remsa och resultat
+-	Decimaltecken visas som komma i remsa och resultat
 
 ---
 
