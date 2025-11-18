@@ -1,6 +1,6 @@
 # Miniräknare
 
-En precisionssäker miniräknare byggd i **Flutter** — med live-uträkning, mörkt/ljust läge, tusentalsavgränsning, korrekt procentlogik och **exakt Decimal-aritmetik** (ingen flyttalsavrundning som med `double` i tidigare version).
+En precisionssäker miniräknare byggd i **Flutter** — med live-uträkning, mörkt/ljust läge, tusentalsavgränsning, korrekt procentlogik och korrekta decimaler (ingen flyttalsavrundning).
 
 ---
 
