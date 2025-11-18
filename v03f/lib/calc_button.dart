@@ -1,55 +1,79 @@
 import 'package:flutter/material.dart';
 
 class CalcButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  /// Nyckel för själva knappen (används i tester)
+  final Key? buttonKey;
+
   const CalcButton({
     super.key,
     required this.label,
     required this.onTap,
-    this.onLongPress,
+    this.buttonKey,
   });
-
-  final String label;
-  final VoidCallback onTap;
-  final VoidCallback? onLongPress;
-
-  bool get _isOp => const {'÷','×','−','+'}.contains(label);
-  bool get _isClear => label == 'C';
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final bool isDark = theme.brightness == Brightness.dark;
 
-    // Färger
-    final Color bg = _isClear
-        ? Colors.red.shade700
-        : (_isOp ? scheme.primaryContainer : scheme.surfaceContainerHighest);
-    final Color fg = _isClear
+    // -- Typ --
+    final bool isClear = label == 'C';
+    final bool isEquals = label == '=';
+    final bool isOp = ['+', '−', '×', '÷'].contains(label);
+
+    // -- Blå "=" variant --
+    // Ljust tema → blekare blå
+    // Mörkt tema → starkare blå
+    final Color equalsBg = isDark
+        ? const Color(0xFF2563EB)  // starkare blå (typ Tailwind "blue-600")
+        : const Color(0xFF93C5FD); // ljusare blå ("blue-300")
+
+    final Color equalsFg = isDark
         ? Colors.white
-        : (_isOp ? scheme.onPrimaryContainer : scheme.onSurface);
+        : Colors.black87;
 
-    return AspectRatio(
-      aspectRatio: 1, // kvadrat
-      child: ElevatedButton(
-        onPressed: onTap,
-        onLongPress: onLongPress,
-        style: ButtonStyle(
-          backgroundColor: WidgetStateProperty.resolveWith((_) => bg),
-          foregroundColor: WidgetStateProperty.resolveWith((_) => fg),
-          textStyle: WidgetStateProperty.resolveWith(
-            (_) => const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
-          ),
-          shape: WidgetStateProperty.resolveWith(
-            (_) => RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          padding: WidgetStateProperty.resolveWith(
-            (_) => const EdgeInsets.symmetric(vertical: 18),
-          ),
-          // Inga deprecated MaterialState/withOpacity här
+    // -- Standardoperatorer --
+    final Color opBg = scheme.primaryContainer;
+    final Color opFg = scheme.onPrimaryContainer;
+
+    // -- Övriga knappar --
+    final Color numBg = scheme.surfaceContainerHighest;
+    final Color numFg = scheme.onSurface;
+
+    // -- Bakgrundsfärg --
+    final Color bg = isClear
+        ? Colors.red.shade700
+        : (isEquals
+            ? equalsBg
+            : (isOp ? opBg : numBg));
+
+    // -- Textfärg --
+    final Color fg = isClear
+        ? Colors.white
+        : (isEquals
+            ? equalsFg
+            : (isOp ? opFg : numFg));
+
+    return ElevatedButton(
+      key: buttonKey,
+      onPressed: onTap,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: bg,
+        foregroundColor: fg,
+        padding: EdgeInsets.zero, // storlek styrs av ButtonGrid
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
         ),
-        child: Text(label),
+        textStyle: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w600,
+        ),
       ),
+      child: Text(label),
     );
   }
 }

@@ -35,7 +35,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Räkna CalcButton (inte ElevatedButton) för stabilitet
-    expect(find.byType(CalcButton), findsNWidgets(16));
+    expect(find.byType(CalcButton), findsNWidgets(18));
 
     // Displayen startar på "0"
     expect(_readDisplay(tester), '0');
