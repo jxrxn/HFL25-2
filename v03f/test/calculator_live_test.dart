@@ -23,7 +23,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {
-    // Här kan vi sätta gemensamma saker för alla tester om det behövs
+    // Gemensam setup om du vill lägga till något senare
   });
 
   testWidgets(
@@ -95,8 +95,8 @@ void main() {
       findsOneWidget,
     );
 
-    // Uttrycksremsan visar "0"
-    expect(find.text('0'), findsWidgets); // display OCH remsa kan båda innehålla "0"
+    // Uttrycksremsan visar "0" (kan förekomma flera gånger)
+    expect(find.text('0'), findsWidgets);
   });
 
   testWidgets('Decimal med kommatecken: 1 , 5 × 2 ⇒ 3', (tester) async {
@@ -119,12 +119,16 @@ void main() {
     await tester.pumpWidget(const CalculatorApp());
     await tester.pumpAndSettle();
 
+    // 8 ÷ 0 =
     await _tap(tester, '8');
     await _tap(tester, '÷');
     await _tap(tester, '0');
+    await _tap(tester, '=');
 
+    // Nu ska displayen visa "Error"
+    final display = _display();
     expect(
-      find.descendant(of: _display(), matching: find.text('Error')),
+      find.descendant(of: display, matching: find.text('Error')),
       findsOneWidget,
     );
   });
