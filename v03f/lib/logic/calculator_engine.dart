@@ -1,14 +1,25 @@
 // lib/logic/calculator_engine.dart
+import 'package:decimal/decimal.dart';
 
 class CalculatorEngine {
-  // ===== Gränser för säkra tal =====
-  static const int _maxSafeInt = 999999999999999; // 15 nior
-  static const int _maxIntDigits = 15;
-  static const int _maxTotalDigits = 20; // inkl decimaldel
+  // ===== Gränser =====
+  static const int _maxSigDigits = 15;            // max signifikanta siffror
+  static final Decimal _maxAbs =
+      Decimal.parse('999999999999999');           // gräns i Decimal
+
+  /// Hjälp: gör en exakt division a/b och får tillbaka Decimal.
+  static Decimal _divDecimal(Decimal a, Decimal b) {
+    // Gör om till Rational först
+    final r = a.toRational() / b.toRational();
+    // Tillbaka till Decimal med begränsad precision
+    return r.toDecimal(
+      scaleOnInfinitePrecision: _maxSigDigits,
+    );
+  }
 
   // ===== Intern state =====
   final List<_Tok> _tokens = <_Tok>[]; // infix: Num, Op, Num, Op, ...
-  String _cur = '0';                   // pågående tal som text
+  String _cur = '0'; // pågående tal som text
   String? _error;
   bool _justEvaluated = false;
 
@@ -23,14 +34,43 @@ class CalculatorEngine {
 
   /// Det som visas i stora displayen (live-resultat).
   String get display {
+    // 1) Error-läge
     if (_error != null) return 'Error';
 
-    final preview = _evalPreview();
-    if (preview != null) return _fmt(preview);
+    // 2) Försök live-preview av hela uttrycket,
+    //    MEN hoppa över om vi är mitt i en hängande decimal (1., -., osv).
+    final hasHangingDot =
+        _cur == '.' || _cur == '-.' || (_cur.endsWith('.') && _cur.length > 1);
 
-    // fallback: visa current
-    final d = _toDouble(_cur);
-    return _fmt(d ?? 0);
+    final preview = _evalPreview();
+    if (preview != null && !hasHangingDot) {
+      return _fmt(preview);
+    }
+
+    // 3) Om inget preview (eller vi har hängande decimal), visa _cur.
+
+    // Tomt → visa 0
+    if (_cur.isEmpty) return '0';
+
+    // Specialfall: bara punkt
+    if (_cur == '.') return '0.';
+
+    // Specialfall: negativt tal där bara '-' och '.' är inskrivna
+    if (_cur == '-.') return '-0.';
+
+    // Om vi har t.ex. "1." eller "1234.", visa precis så.
+    if (_cur.endsWith('.') && _cur.length > 1) {
+      return _cur;
+    }
+
+    // 4) Vanligt fall: försök tolka _cur som Decimal och formatera snyggt.
+    final d = _toDecimal(_cur);
+    if (d != null) {
+      return _fmt(d);
+    }
+
+    // 5) Fallback: om _cur inte går att parse:a (ska nästan aldrig hända)
+    return _cur;
   }
 
   /// Den lilla remsan med uttrycket.
@@ -57,66 +97,75 @@ class CalculatorEngine {
   /// - '%'
   /// - 'C'  (kort tryck = backspace)
   /// - '=', '+', '-', '−', '×', '÷', '*', '/'
-  void input(String v) {
-    // Om vi är i error-läge: låt C eller en siffra börja om.
-    if (_error != null) {
-      if (v == 'C' || _isDigit(v) || v == ',' || v == '.') {
-        clearAll();
-      } else {
-        return; // ignorera annat
-      }
+void input(String v) {
+  // Om vi är i error-läge: låt C eller en siffra (eller decimal) börja om.
+  if (_error != null) {
+    if (v == 'C' || _isDigit(v) || v == ',' || v == '.') {
+      clearAll();
+    } else {
+      return; // ignorera annat tills man "bryter sig ur" med C/siffra
     }
-
-    // Normalisera decimal
-    if (v == ',') v = '.';
-
-    // Normalisera operator (om det är en)
-    final op = _normOp(v); // '+', '-', '*', '/', eller null
-
-    // Siffror
-    if (_isDigit(v)) {
-      _pushDigit(v);
-      return;
-    }
-
-    // Decimalpunkt
-    if (v == '.') {
-      _pushDot();
-      return;
-    }
-
-    // Byt tecken
-    if (v == '±') {
-      _toggleSign();
-      return;
-    }
-
-    // Procent
-    if (v == '%') {
-      _applyPercent();
-      return;
-    }
-
-    // Lika med
-    if (v == '=') {
-      _commitEquals();
-      return;
-    }
-
-    // Kort tryck på C = backspace
-    if (v == 'C') {
-      _shortClear();
-      return;
-    }
-
-    // Operatorer
-    if (op != null) {
-      _commitOperator(op);
-      return;
-    }
-
-    // Okänd input ignoreras
   }
+
+  // Normalisera decimal
+  if (v == ',') v = '.';
+
+  // Normalisera operator (om det är en)
+  final op = _normOp(v); // '+', '-', '*', '/', eller null
+
+  // ===== Siffror =====
+  if (_isDigit(v)) {
+    _pushDigit(v);
+
+    // NYTT: live-fel vid division med noll (t.ex. 8 ÷ 0)
+    if (_tokens.isNotEmpty &&
+        _tokens.last is _OpTok &&
+        (_tokens.last as _OpTok).op == '/' &&
+        _cur == '0') {
+      _error = 'err';
+    }
+
+    return;
+  }
+
+  // ===== Decimalpunkt =====
+  if (v == '.') {
+    _pushDot();
+    return;
+  }
+
+  // ===== Byt tecken =====
+  if (v == '±') {
+    _toggleSign();
+    return;
+  }
+
+  // ===== Procent =====
+  if (v == '%') {
+    _applyPercent();
+    return;
+  }
+
+  // ===== Lika med =====
+  if (v == '=') {
+    _commitEquals();
+    return;
+  }
+
+  // ===== Kort tryck på C = backspace =====
+  if (v == 'C') {
+    _shortClear();
+    return;
+  }
+
+  // ===== Operatorer =====
+  if (op != null) {
+    _commitOperator(op);
+    return;
+  }
+
+  // Okänd input ignoreras
+}
 
   // ======== Inmatnings-hjälpare ========
 
@@ -131,13 +180,9 @@ class CalculatorEngine {
       _lastStrip = null;
     }
 
-    // Begränsa heltals- och totalsiffror
-    final intDigits = _countIntDigits(_cur);
-    final hasDot = _cur.contains('.');
-    if (!hasDot && intDigits >= _maxIntDigits) return;
-
-    final totalDigits = _countDigits(_cur);
-    if (totalDigits >= _maxTotalDigits) return;
+    // Begränsa totala antalet siffror (heltal + decimal)
+    final sigDigits = _countDigits(_cur);
+    if (sigDigits >= _maxSigDigits) return;
 
     if (_cur == '0') {
       _cur = d;
@@ -181,8 +226,10 @@ class CalculatorEngine {
   }
 
   void _applyPercent() {
-    final b = _toDouble(_cur);
+    final b = _toDecimal(_cur);
     if (b == null) return;
+
+    final hundred = Decimal.fromInt(100);
 
     // Kontext: [..., Num(a), Op(op)] + current b
     if (_tokens.length >= 2 &&
@@ -191,27 +238,31 @@ class CalculatorEngine {
       final a = (_tokens[_tokens.length - 2] as _NumTok).value;
       final op = (_tokens.last as _OpTok).op;
 
-      double newCurrent;
+      // b som andel (b/100) räknat exakt, men tillbaka till Decimal
+      final bFrac = _divDecimal(b, hundred);
+
+      Decimal newCurrent;
       switch (op) {
         case '+':
         case '-':
           // a + b% => a + a*(b/100)
           // a - b% => a - a*(b/100)
-          newCurrent = a * (b / 100.0);
+          newCurrent = a * bFrac;
           break;
         case '*':
           // a * b% => a * (b/100)
-          newCurrent = (b / 100.0);
+          newCurrent = bFrac;
           break;
         case '/':
-          // a / b% => a / (b/100)
-          newCurrent = (b / 100.0);
+          // a / b% => a / (b/100) hanteras av att uttrycket blir a ÷ (b/100)
+          // så även här använder vi bara bFrac som “nuvarande tal”
+          newCurrent = bFrac;
           break;
         default:
-          newCurrent = b / 100.0;
+          newCurrent = bFrac;
       }
 
-      if (_invalidNum(newCurrent)) {
+      if (_exceedsLimit(newCurrent)) {
         _error = 'err';
         return;
       }
@@ -223,8 +274,8 @@ class CalculatorEngine {
     }
 
     // Ingen operator-kontekst: b% => b/100
-    final newCurrent = b / 100.0;
-    if (_invalidNum(newCurrent)) {
+    final newCurrent = _divDecimal(b, hundred);
+    if (_exceedsLimit(newCurrent)) {
       _error = 'err';
       return;
     }
@@ -255,10 +306,11 @@ class CalculatorEngine {
   void _commitOperator(String op) {
     _curAsPercentText = null;
 
-    final d = _toDouble(_cur);
+    final d = _toDecimal(_cur);
 
     // Ingen current → byt bara operator om det redan finns en
-    if (d == null || (_cur == '0' && _curAsPercentText == null && !_justEvaluated)) {
+    if (d == null ||
+        (_cur == '0' && _curAsPercentText == null && !_justEvaluated)) {
       if (_tokens.isNotEmpty && _tokens.last is _OpTok) {
         _tokens[_tokens.length - 1] = _OpTok(op);
       }
@@ -294,10 +346,10 @@ class CalculatorEngine {
   void _commitEquals() {
     if (_tokens.isEmpty && _cur.isEmpty) return;
 
-    // Bygg sekvens tokens + ev current
+    // Bygg sekvens tokens + ev current (för själva beräkningen)
     final seq = <_Tok>[..._tokens];
+    final d = _toDecimal(_cur);
 
-    final d = _toDouble(_cur);
     if (seq.isEmpty) {
       if (d == null) return;
       seq.add(_NumTok(d));
@@ -305,8 +357,7 @@ class CalculatorEngine {
       if (seq.last is _OpTok) {
         // Slutar på operator → lägg med current om den är meningsfull,
         // annars ta bort hängande operator.
-        final hasMeaningfulCurrent =
-            _curAsPercentText != null ||
+        final hasMeaningfulCurrent = _curAsPercentText != null ||
             (d != null && !(_cur == '0' && !_justEvaluated));
         if (hasMeaningfulCurrent && d != null) {
           seq.add(_NumTok(d));
@@ -328,10 +379,26 @@ class CalculatorEngine {
       return;
     }
 
-    // Bygg t.ex. "20 + 3 × 2 = 26"
-    final exprText = _sequenceToStrip(seq);
-    final resultText = _stripZeros(_toPlain(val));
-    _lastStrip = '$exprText = $resultText';
+    // ===== Bygg remsa med mänsklig text (inkl. %, tusental) =====
+    // Basen: tokens (utan current)
+    final exprBuf = StringBuffer();
+    exprBuf.write(_sequenceToStrip(_tokens));
+
+    // Lägg till current-delen så som den visats för användaren:
+    // - om vi är i procent-läge → "10 %"
+    // - annars det sista talet, utan extra .0
+    if (_tokens.isNotEmpty) {
+      if (_curAsPercentText != null) {
+        exprBuf.write(_curAsPercentText); // t.ex. "10 %"
+      } else if (d != null && !(_cur == '0' && !_justEvaluated)) {
+        exprBuf.write(_stripZeros(_toPlain(d))); // t.ex. "2" eller "0.1"
+      }
+    }
+
+    final exprText = exprBuf.toString();
+
+    // Resultatet formateras med tusentalsavgränsare
+    _lastStrip = '$exprText = ${_fmt(val)}';
 
     // Efter '=' börjar vi om: visa resultatet som ny current.
     _tokens.clear();
@@ -342,27 +409,26 @@ class CalculatorEngine {
 
   // ======== Live-preview (tokens + current) ========
 
-  double? _evalPreview() {
+  Decimal? _evalPreview() {
     if (_error != null) return null;
 
     // Inga tokens alls → bara current
     if (_tokens.isEmpty) {
-      final d = _toDouble(_cur);
+      final d = _toDecimal(_cur);
       return d;
     }
 
     // Börja med en kopia av tokens
     final seq = <_Tok>[..._tokens];
 
-    final d = _toDouble(_cur);
-    final hasMeaningfulCurrent =
-        _curAsPercentText != null ||
+    final d = _toDecimal(_cur);
+    final hasMeaningfulCurrent = _curAsPercentText != null ||
         (d != null && !(_cur == '0' && !_justEvaluated));
 
     if (seq.isNotEmpty && seq.last is _OpTok) {
       if (hasMeaningfulCurrent) {
         // Ex: 20 + 3 × 2 → tokens: [20, +, 3, ×], cur: "2"
-        seq.add(_NumTok(d ?? 0));
+        seq.add(_NumTok(d ?? Decimal.zero));
       } else {
         // Ex: 20 + 3 × → visa 20 + 3 (ta bort sista operatorn)
         seq.removeLast();
@@ -375,7 +441,7 @@ class CalculatorEngine {
     if (seq.isEmpty) return null;
 
     final val = _evaluate(seq);
-    if (val == null || _invalidNum(val) || _exceedsLimit(val)) return null;
+    if (val == null || _exceedsLimit(val)) return null;
     return val;
   }
 
@@ -385,7 +451,9 @@ class CalculatorEngine {
     final buf = StringBuffer();
     for (final t in seq) {
       if (t is _NumTok) {
-        buf.write(_stripZeros(_toPlain(t.value)));
+        // Samma logik som tidigare, men byt . → , för visning
+        final plain = _stripZeros(_toPlain(t.value));
+        buf.write(plain.replaceAll('.', ','));
       } else if (t is _OpTok) {
         buf.write(' ${_prettyOp(t.op)} ');
       }
@@ -401,17 +469,55 @@ class CalculatorEngine {
       return _lastStrip ?? '';
     }
 
+    // 1) Inga tokens ännu ⇒ vi är i första talet / första procenten
+    if (_tokens.isEmpty) {
+      // a) Pågående procentläge: visa t.ex. "10 %"
+      if (_curAsPercentText != null) {
+        return _curAsPercentText!;
+      }
+
+      // b) Specialfall: användaren har tryckt komma men ingen decimalsiffra än
+      if (_cur == '.') return '0,';
+      if (_cur == '-.') return '-0,';
+      if (_cur.endsWith('.') && _cur.length > 1) {
+        // Ex: "1." eller "1234."
+        return _cur.replaceAll('.', ',');
+      }
+
+      // c) Vanligt tal: visa det så fort det inte bara är "0"
+      if (_cur.isEmpty || _cur == '0') {
+        return '';
+      }
+
+      final d = _toDecimal(_cur);
+      if (d == null) return '';
+
+      final plain = _stripZeros(_toPlain(d));
+      return plain.replaceAll('.', ',');
+    }
+
+    // 2) Det finns tokens ⇒ bygg upp "a + b × ..." + current-del
     final buf = StringBuffer();
     buf.write(_sequenceToStrip(_tokens));
 
-    // Current-del (sista talet som håller på att skrivas)
     if (_tokens.isNotEmpty) {
       if (_curAsPercentText != null) {
+        // t.ex. "10 %"
         buf.write(_curAsPercentText);
       } else {
-        final d = _toDouble(_cur);
-        if (d != null && !(_cur == '0' && !_justEvaluated)) {
-          buf.write(_stripZeros(_toPlain(d)));
+        // Specialfall: komma utan decimalsiffra även här
+        if (_cur == '.') {
+          buf.write('0,');
+        } else if (_cur == '-.') {
+          buf.write('-0,');
+        } else if (_cur.endsWith('.') && _cur.length > 1) {
+          buf.write(_cur.replaceAll('.', ','));
+        } else {
+          final d = _toDecimal(_cur);
+          if (d != null && !(_cur == '0' && !_justEvaluated)) {
+            final plain = _stripZeros(_toPlain(d));
+            buf.write(plain.replaceAll('.', ','));
+          }
         }
       }
     }
@@ -421,7 +527,7 @@ class CalculatorEngine {
 
   // ======== Utvärdering (Shunting-yard + RPN) ========
 
-  double? _evaluate(List<_Tok> infix) {
+  Decimal? _evaluate(List<_Tok> infix) {
     if (infix.isEmpty) return null;
 
     // 1) Infix -> RPN (shunting yard)
@@ -444,7 +550,7 @@ class CalculatorEngine {
     }
 
     // 2) RPN-eval
-    final st = <double>[];
+    final st = <Decimal>[];
     for (final t in out) {
       if (t is _NumTok) {
         st.add(t.value);
@@ -452,7 +558,7 @@ class CalculatorEngine {
         if (st.length < 2) return null;
         final b = st.removeLast();
         final a = st.removeLast();
-        double r;
+        late Decimal r;
 
         switch (t.op) {
           case '+':
@@ -465,14 +571,18 @@ class CalculatorEngine {
             r = a * b;
             break;
           case '/':
-            if (b == 0) return null;
-            r = a / b;
-            break;
+            if (b == Decimal.zero) {
+              // Division med noll ska sätta error direkt (även i live-preview).
+              _error = 'err';
+              return null;
+            }
+            r = _divDecimal(a, b);
+          break;
           default:
             return null;
         }
 
-        if (_invalidNum(r) || _exceedsLimit(r)) return null;
+        if (_exceedsLimit(r)) return null;
         st.add(r);
       }
     }
@@ -523,46 +633,34 @@ class CalculatorEngine {
     return 0;
   }
 
-  static bool _invalidNum(double v) => v.isNaN || !v.isFinite;
-
-  static bool _exceedsLimit(num v) => v.abs() > _maxSafeInt;
-
   static int _countDigits(String s) =>
       s.replaceAll(RegExp(r'[^0-9]'), '').length;
 
-  static int _countIntDigits(String s) {
-    final dot = s.indexOf('.');
-    final end = dot == -1 ? s.length : dot;
-    final intPart = s.substring(0, end).replaceAll(RegExp(r'[^0-9]'), '');
-    return intPart.length;
-  }
-
-  static double? _toDouble(String s) {
+  static Decimal? _toDecimal(String s) {
     if (s.isEmpty || s == '-' || s == '+') return null;
     try {
-      return double.parse(s);
+      return Decimal.parse(s);
     } catch (_) {
       return null;
     }
   }
 
-  static String _toPlain(double v) {
-    // Undvik vetenskaplig notation & trimma onödiga nollor.
-    String s = v.toStringAsFixed(12);
-    s = s.replaceFirst(RegExp(r'\.?0+$'), '');
-    return s.isEmpty ? '0' : s;
+  static bool _exceedsLimit(Decimal v) => v.abs() > _maxAbs;
+
+  static String _toPlain(Decimal v) {
+    var s = v.toString();
+    if (s.contains('.')) {
+      s = s.replaceFirst(RegExp(r'\.?0+$'), '');
+    }
+    if (s.isEmpty || s == '-' || s == '+') return '0';
+    return s;
   }
 
   /// Formaterar för stora displayen:
   /// - heltal utan .0
   /// - tusental med smalt mellanrum (U+202F)
-  static String _fmt(double v) {
-    String base;
-    if (v == v.roundToDouble()) {
-      base = v.toInt().toString();
-    } else {
-      base = _toPlain(v);
-    }
+  static String _fmt(Decimal v) {
+    final base = _toPlain(v);
 
     final negative = base.startsWith('-');
     var s = negative ? base.substring(1) : base;
@@ -604,7 +702,7 @@ class CalculatorEngine {
 abstract class _Tok {}
 
 class _NumTok extends _Tok {
-  final double value;
+  final Decimal value;
   _NumTok(this.value);
 }
 

@@ -1,5 +1,7 @@
 // lib/ui/display_widget.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class DisplayWidget extends StatelessWidget {
   final String valueText;
@@ -11,11 +13,11 @@ class DisplayWidget extends StatelessWidget {
     required this.stripText,
   });
 
-  // Lägg in tunna mellanslag som tusentalsavgränsare i heltalsdelen.
-  // Format vi stöttar här: -1234, -1234.56, 1234, 1234.56
+  /// Tunna mellanrum för tusental (för tal i form "12345.67").
+  /// Arbetar alltid med punkt som decimal internt.
   String _groupThousands(String s) {
     final numberPattern = RegExp(r'^-?\d+(\.\d+)?$');
-    if (!numberPattern.hasMatch(s)) return s; // t.ex. "Error" – lämna orörd
+    if (!numberPattern.hasMatch(s)) return s;
 
     final negative = s.startsWith('-');
     var body = negative ? s.substring(1) : s;
@@ -27,7 +29,6 @@ class DisplayWidget extends StatelessWidget {
     final buf = StringBuffer();
     var count = 0;
 
-    // Bygg från höger → vänster
     for (var i = intPart.length - 1; i >= 0; i--) {
       buf.write(intPart[i]);
       count++;
@@ -37,12 +38,10 @@ class DisplayWidget extends StatelessWidget {
       }
     }
 
-    // Vänd tillbaka
     final reversed = buf.toString().runes.toList().reversed;
     final groupedInt = String.fromCharCodes(reversed);
 
-    final sign = negative ? '-' : '';
-    return '$sign$groupedInt$fracPart';
+    return '${negative ? '-' : ''}$groupedInt$fracPart';
   }
 
   @override
@@ -55,7 +54,14 @@ class DisplayWidget extends StatelessWidget {
         ? scheme.onSurface.withValues(alpha: 0.7)
         : scheme.onSurface.withValues(alpha: 0.6);
 
+    // 1) Gruppera tusental för huvudtalet (med punkt internt)
     final groupedValue = _groupThousands(valueText);
+
+    // 2) Konvertera visningen till svensk stil:
+    //    - huvudtalet med kommatecken
+    //    - remsan med kommatecken
+    final displayValue = groupedValue.replaceAll('.', ',');
+    final displayStrip = stripText.replaceAll('.', ',');
 
     return Container(
       width: double.infinity,
@@ -64,32 +70,65 @@ class DisplayWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Smala remsan med uttrycket
-          Text(
-            stripText,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.right,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: stripColor,
-              letterSpacing: 0.5,
+          // ===== ÖVRE REMSAN – horisontellt scrollbar =====
+          SizedBox(
+            height: (theme.textTheme.bodyLarge?.fontSize ?? 16) * 1.4,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                reverse: true, // visa slutet (senaste) till höger
+                child: Text(
+                  displayStrip,
+                  textAlign: TextAlign.right,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: stripColor,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
             ),
           ),
+
           const SizedBox(height: 8),
-          // Stora talet, nere till höger, kan scrollas horisontellt
+
+          // ===== STORA TALLET — klickbart & auto-size =====
           Expanded(
-            child: Align(
-              alignment: Alignment.bottomRight,
-              child: SingleChildScrollView(
-                reverse: true,
-                scrollDirection: Axis.horizontal,
-                child: Text(
-                  groupedValue,
+            child: GestureDetector(
+              onTap: () {
+                if (valueText.isEmpty) return;
+
+                // Kopierar råvärdet (med punkt) – bra för datorer / klistra in.
+                Clipboard.setData(ClipboardData(text: valueText));
+
+                final snackBar = SnackBar(
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: isDark
+                      ? scheme.surfaceContainerLow
+                      : scheme.surfaceContainerHighest,
+                  content: Text(
+                    'Tal kopierat',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  duration: const Duration(milliseconds: 900),
+                );
+
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(snackBar);
+              },
+              child: Align(
+                alignment: Alignment.bottomRight,
+                child: AutoSizeText(
+                  displayValue,
                   key: const Key('display'),
                   maxLines: 1,
-                  softWrap: false,
+                  minFontSize: 18,
+                  stepGranularity: 1,
+                  textAlign: TextAlign.right,
                   style: theme.textTheme.displayMedium?.copyWith(
-                    fontSize: 38,
                     fontWeight: FontWeight.bold,
                     color: scheme.onSurface,
                   ),

@@ -28,7 +28,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Miniräknare'),
         actions: [
           IconButton(
             tooltip: isDark ? 'Byt till ljust tema' : 'Byt till mörkt tema',
@@ -37,25 +36,86 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Övre panel: remsa + stort värde, full bredd
-          Expanded(
-            child: DisplayWidget(
-              valueText: engine.display,
-              stripText: engine.strip,
-            ),
-          ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          const cols = 4;
+          const rows = 5;
+          const gap = 3.0;
 
-          // Nederdel: knapparna
-          Expanded(
-            flex: 2,
-            child: ButtonGrid(
-              onTap: (v) => setState(() => engine.input(v)),
-              onLongClear: () => setState(() => engine.clearAll()),
+          final width = constraints.maxWidth;
+          final height = constraints.maxHeight;
+
+          // Mindre marginal på mobil, lite större på större skärmar
+          final outerMargin = width < 500 ? 16.0 : 32.0;
+          final horizontalPadding = width < 500 ? 8.0 : 16.0;
+
+          final usableWidth = width - outerMargin * 2;
+          final usableHeight = height - outerMargin * 2;
+
+          // Samma logik som i ButtonGrid för att räkna fram cellstorlek
+          final maxGridWidthByWidth = usableWidth - horizontalPadding * 2;
+          final cellSizeByWidth =
+              (maxGridWidthByWidth - gap * (cols - 1)) / cols;
+
+          final buttonAreaHeight = usableHeight * 2 / 3;
+          final cellSizeByHeight =
+              (buttonAreaHeight - gap * (rows - 1)) / rows;
+
+          final cell = cellSizeByWidth < cellSizeByHeight
+              ? cellSizeByWidth
+              : cellSizeByHeight;
+
+          // Själva gridets bredd (4 knappar + 3 gap)
+          final gridWidth = cell * cols + gap * (cols - 1);
+
+          // Yttre bredd: grid + padding på båda sidor
+          final outerWidth = gridWidth + horizontalPadding * 2;
+
+          return Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: outerMargin,
+              vertical: 16,
             ),
-          ),
-        ],
+            child: Column(
+              children: [
+                // ===== DISPLAY – samma bredd som knapparna =====
+                Expanded(
+                  flex: 1,
+                  child: Center(
+                    child: SizedBox(
+                      width: outerWidth,
+                      child: DisplayWidget(
+                        valueText: engine.display,
+                        stripText: engine.strip,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // ===== GRID – samma bredd, lite luft mot nederkant =====
+                Expanded(
+                  flex: 2,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: SizedBox(
+                        width: outerWidth,
+                        child: ButtonGrid(
+                          onTap: (v) => setState(() => engine.input(v)),
+                          onLongClear: () => setState(() => engine.clearAll()),
+                          gap: gap,
+                          horizontalPadding: horizontalPadding,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

@@ -7,30 +7,55 @@ class ButtonGrid extends StatelessWidget {
     super.key,
     required this.onTap,
     this.onLongClear,
-    this.gap = 12,
+    this.gap = 3,
     this.horizontalPadding = 16,
   });
 
+  /// Anropas när en knapp trycks.
   final void Function(String value) onTap;
+
+  /// Anropas vid långt tryck på C (AC-funktion).
   final VoidCallback? onLongClear;
+
+  /// Mellanrum mellan knapparna.
   final double gap;
+
+  /// Horisontell padding innanför den givna bredden.
   final double horizontalPadding;
 
   @override
-  Widget build(BuildContext context) {
+    Widget build(BuildContext context) {
+    String keySuffix(String label) {
+      switch (label) {
+        case '÷':
+          return '/';
+        case '×':
+          return '*';
+        case '−':
+          return '-';
+        default:
+          return label;
+      }
+    }
     return LayoutBuilder(
-      builder: (context, c) {
-        final totalWidth = c.maxWidth;
-        final totalHeight = c.maxHeight;
+      builder: (context, constraints) {
+        final totalWidth = constraints.maxWidth;
+        final totalHeight = constraints.maxHeight;
 
         const cols = 4;
         const rows = 5;
 
-        // Kvadratiska celler
+        // Tillgänglig bredd för själva gridet (innanför padding).
         final maxGridWidth = totalWidth - horizontalPadding * 2;
+
+        // Cellstorlek beroende på bredd
         final cellSizeByWidth = (maxGridWidth - gap * (cols - 1)) / cols;
+
+        // Cellstorlek beroende på höjd
         final cellSizeByHeight =
             (totalHeight - gap * (rows - 1)) / rows;
+
+        // Vi vill ha kvadratiska knappar → ta minsta värdet
         final cell = cellSizeByWidth < cellSizeByHeight
             ? cellSizeByWidth
             : cellSizeByHeight;
@@ -38,6 +63,7 @@ class ButtonGrid extends StatelessWidget {
         final gridWidth = cell * cols + gap * (cols - 1);
         final gridHeight = cell * rows + gap * (rows - 1);
 
+        // Centrera gridet inom ytan
         final startX = (totalWidth - gridWidth) / 2;
         final startY = (totalHeight - gridHeight) / 2;
 
@@ -52,6 +78,7 @@ class ButtonGrid extends StatelessWidget {
               child: CalcButton(
                 label: label,
                 onTap: () => onTap(label),
+                buttonKey: Key('btn-${keySuffix(label)}'),
               ),
             );
 
@@ -63,6 +90,7 @@ class ButtonGrid extends StatelessWidget {
               child: CalcButton(
                 label: label,
                 onTap: () => onTap(label),
+                buttonKey: Key('btn-${keySuffix(label)}'),
               ),
             );
 
@@ -74,6 +102,7 @@ class ButtonGrid extends StatelessWidget {
               child: CalcButton(
                 label: label,
                 onTap: () => onTap(label),
+                buttonKey: Key('btn-${keySuffix(label)}'),
               ),
             );
 
@@ -87,6 +116,7 @@ class ButtonGrid extends StatelessWidget {
                 child: CalcButton(
                   label: 'C',
                   onTap: () => onTap('C'),
+                  buttonKey: const Key('btn-C'),
                 ),
               ),
             );
