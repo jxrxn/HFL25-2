@@ -97,75 +97,66 @@ class CalculatorEngine {
   /// - '%'
   /// - 'C'  (kort tryck = backspace)
   /// - '=', '+', '-', '−', '×', '÷', '*', '/'
-void input(String v) {
-  // Om vi är i error-läge: låt C eller en siffra (eller decimal) börja om.
-  if (_error != null) {
-    if (v == 'C' || _isDigit(v) || v == ',' || v == '.') {
-      clearAll();
-    } else {
-      return; // ignorera annat tills man "bryter sig ur" med C/siffra
-    }
-  }
-
-  // Normalisera decimal
-  if (v == ',') v = '.';
-
-  // Normalisera operator (om det är en)
-  final op = _normOp(v); // '+', '-', '*', '/', eller null
-
-  // ===== Siffror =====
-  if (_isDigit(v)) {
-    _pushDigit(v);
-
-    // NYTT: live-fel vid division med noll (t.ex. 8 ÷ 0)
-    if (_tokens.isNotEmpty &&
-        _tokens.last is _OpTok &&
-        (_tokens.last as _OpTok).op == '/' &&
-        _cur == '0') {
-      _error = 'err';
+  void input(String v) {
+    // Om vi är i error-läge: låt C eller en siffra (eller decimal) börja om.
+    if (_error != null) {
+      if (v == 'C' || _isDigit(v) || v == ',' || v == '.') {
+        clearAll();
+      } else {
+        return; // ignorera annat tills man "bryter sig ur" med C/siffra
+      }
     }
 
-    return;
-  }
+    // Normalisera decimal
+    if (v == ',') v = '.';
 
-  // ===== Decimalpunkt =====
-  if (v == '.') {
-    _pushDot();
-    return;
-  }
+    // Normalisera operator (om det är en)
+    final op = _normOp(v); // '+', '-', '*', '/', eller null
 
-  // ===== Byt tecken =====
-  if (v == '±') {
-    _toggleSign();
-    return;
-  }
+    // ===== Siffror =====
+    if (_isDigit(v)) {
+      _pushDigit(v);
+      return;
+    }
 
-  // ===== Procent =====
-  if (v == '%') {
-    _applyPercent();
-    return;
-  }
+    // ===== Decimalpunkt =====
+    if (v == '.') {
+      _pushDot();
+      return;
+    }
 
-  // ===== Lika med =====
-  if (v == '=') {
-    _commitEquals();
-    return;
-  }
+    // ===== Byt tecken =====
+    if (v == '±') {
+      _toggleSign();
+      return;
+    }
 
-  // ===== Kort tryck på C = backspace =====
-  if (v == 'C') {
-    _shortClear();
-    return;
-  }
+    // ===== Procent =====
+    if (v == '%') {
+      _applyPercent();
+      return;
+    }
 
-  // ===== Operatorer =====
-  if (op != null) {
-    _commitOperator(op);
-    return;
-  }
+    // ===== Lika med =====
+    if (v == '=') {
+      _commitEquals();
+      return;
+    }
 
-  // Okänd input ignoreras
-}
+    // ===== Kort tryck på C = backspace =====
+    if (v == 'C') {
+      _shortClear();
+      return;
+    }
+
+    // ===== Operatorer =====
+    if (op != null) {
+      _commitOperator(op);
+      return;
+    }
+
+    // Okänd input ignoreras
+  }
 
   // ======== Inmatnings-hjälpare ========
 
@@ -357,8 +348,8 @@ void input(String v) {
       if (seq.last is _OpTok) {
         // Slutar på operator → lägg med current om den är meningsfull,
         // annars ta bort hängande operator.
-        final hasMeaningfulCurrent = _curAsPercentText != null ||
-            (d != null && !(_cur == '0' && !_justEvaluated));
+        final hasMeaningfulCurrent =
+            _curAsPercentText != null || d != null;
         if (hasMeaningfulCurrent && d != null) {
           seq.add(_NumTok(d));
         } else {
@@ -407,43 +398,64 @@ void input(String v) {
     _justEvaluated = true;
   }
 
-  // ======== Live-preview (tokens + current) ========
+// ======== Live-preview (tokens + current) ========
+Decimal? _evalPreview() {
+  if (_error != null) return null;
 
-  Decimal? _evalPreview() {
-    if (_error != null) return null;
-
-    // Inga tokens alls → bara current
-    if (_tokens.isEmpty) {
-      final d = _toDecimal(_cur);
-      return d;
-    }
-
-    // Börja med en kopia av tokens
-    final seq = <_Tok>[..._tokens];
-
+  // Inga tokens alls → bara current
+  if (_tokens.isEmpty) {
     final d = _toDecimal(_cur);
-    final hasMeaningfulCurrent = _curAsPercentText != null ||
-        (d != null && !(_cur == '0' && !_justEvaluated));
-
-    if (seq.isNotEmpty && seq.last is _OpTok) {
-      if (hasMeaningfulCurrent) {
-        // Ex: 20 + 3 × 2 → tokens: [20, +, 3, ×], cur: "2"
-        seq.add(_NumTok(d ?? Decimal.zero));
-      } else {
-        // Ex: 20 + 3 × → visa 20 + 3 (ta bort sista operatorn)
-        seq.removeLast();
-      }
-    } else {
-      // Slutar på tal: oftast har vi redan allt i tokens
-      // Vi lägger inte till current igen för att undvika dubletter.
-    }
-
-    if (seq.isEmpty) return null;
-
-    final val = _evaluate(seq);
-    if (val == null || _exceedsLimit(val)) return null;
-    return val;
+    return d;
   }
+
+  // Börja med en kopia av tokens
+  final seq = <_Tok>[..._tokens];
+
+  final d = _toDecimal(_cur);
+  final hasMeaningfulCurrent = _curAsPercentText != null ||
+      (d != null && !(_cur == '0' && !_justEvaluated));
+
+  if (seq.isNotEmpty && seq.last is _OpTok) {
+    if (hasMeaningfulCurrent) {
+      // Ex: 20 + 3 × 2 → tokens: [20, +, 3, ×], cur: "2"
+      seq.add(_NumTok(d ?? Decimal.zero));
+    } else {
+      // Ex: 20 + 3 × → visa 20 + 3 (ta bort sista operatorn)
+      seq.removeLast();
+    }
+  } else {
+    // Slutar på tal: oftast har vi redan allt i tokens.
+    // Extra specialfall: om vi har en procenttext aktiv men inget nytt tal,
+    // kan vi behöva lägga till värdet som tal i sekvensen.
+    if (_curAsPercentText != null && d != null) {
+      // Se till att inte lägga in dubbelt om seq redan slutar med samma värde.
+      if (seq.isEmpty || !(seq.last is _NumTok && (seq.last as _NumTok).value == d)) {
+        seq.add(_NumTok(d));
+      }
+    }
+  }
+
+  if (seq.isEmpty) return null;
+
+  // 🔹 SPECIALFALL: "… ÷ 0" i live-preview
+  // Om sekvensen slutar med Op('/') följt av Num(0) → avbryt bara preview
+  if (seq.length >= 2 &&
+      seq[seq.length - 1] is _NumTok &&
+      seq[seq.length - 2] is _OpTok) {
+    final lastNum = seq.last as _NumTok;
+    final lastOp  = seq[seq.length - 2] as _OpTok;
+
+    if (lastOp.op == '/' && lastNum.value == Decimal.zero) {
+      // Användaren har skrivit a ÷ 0, men kanske är på väg mot 0,2
+      // → ingen Error ännu, bara ingen live-preview.
+      return null;
+    }
+  }
+
+  final val = _evaluate(seq);  // OBS: samma som du hade innan
+  if (val == null || _exceedsLimit(val)) return null;
+  return val;
+}
 
   // ======== Remsan ========
 
