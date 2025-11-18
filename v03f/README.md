@@ -21,7 +21,7 @@ Det betyder:
 ### Live-uträkning
 Resultatet uppdateras direkt medan du skriver.  
 Exempel:  
-`20 + 3 × 2` → visar **26** löpande, även innan du tryckt `=`.
+`20 + 3 × 2` → visar **26** direkt, även innan du tryckt `=`.
 
 ---
 
