@@ -1,158 +1,144 @@
-// lib/ui/button_grid.dart
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../calc_button.dart';
 
 class ButtonGrid extends StatelessWidget {
+  final void Function(String) onTap;
+  final VoidCallback onLongClear;
+  final double gap;
+  final double horizontalPadding;
+
   const ButtonGrid({
     super.key,
     required this.onTap,
-    this.onLongClear,
-    this.gap = 3,
-    this.horizontalPadding = 16,
+    required this.onLongClear,
+    this.gap = 3.0,
+    this.horizontalPadding = 16.0,
   });
 
-  /// Anropas när en knapp trycks.
-  final void Function(String value) onTap;
-
-  /// Anropas vid långt tryck på C (AC-funktion).
-  final VoidCallback? onLongClear;
-
-  /// Mellanrum mellan knapparna.
-  final double gap;
-
-  /// Horisontell padding innanför den givna bredden.
-  final double horizontalPadding;
-
   @override
-    Widget build(BuildContext context) {
-    String keySuffix(String label) {
-      switch (label) {
-        case '÷':
-          return '/';
-        case '×':
-          return '*';
-        case '−':
-          return '-';
-        default:
-          return label;
-      }
-    }
+  Widget build(BuildContext context) {
+    const cols = 4;
+    const rows = 5;
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final totalWidth = constraints.maxWidth;
-        final totalHeight = constraints.maxHeight;
+        final maxWidth = constraints.maxWidth;
+        final maxHeight = constraints.maxHeight;
 
-        const cols = 4;
-        const rows = 5;
+        // Om vi inte fått någon bredd alls: rita inget.
+        if (maxWidth <= 0) {
+          return const SizedBox.shrink();
+        }
 
-        // Tillgänglig bredd för själva gridet (innanför padding).
-        final maxGridWidth = totalWidth - horizontalPadding * 2;
+        // Använd bredden (med padding) och höjden för att hitta en cellstorlek
+        // som får hela 4x5-gridet att få plats.
+        final usableWidth = maxWidth - horizontalPadding * 2;
 
-        // Cellstorlek beroende på bredd
-        final cellSizeByWidth = (maxGridWidth - gap * (cols - 1)) / cols;
+        // Om usableWidth blir negativ → rita inget.
+        if (usableWidth <= 0) {
+          return const SizedBox.shrink();
+        }
 
-        // Cellstorlek beroende på höjd
-        final cellSizeByHeight =
-            (totalHeight - gap * (rows - 1)) / rows;
+        final double cellFromWidth =
+            (usableWidth - gap * (cols - 1)) / cols;
 
-        // Vi vill ha kvadratiska knappar → ta minsta värdet
-        final cell = cellSizeByWidth < cellSizeByHeight
-            ? cellSizeByWidth
-            : cellSizeByHeight;
+        // maxHeight kan vara oändlig (t.ex. i en Expanded); då låter vi höjden
+        // inte begränsa oss.
+        double cellFromHeight;
+        if (maxHeight.isInfinite) {
+          cellFromHeight = cellFromWidth;
+        } else {
+          cellFromHeight = (maxHeight - gap * (rows - 1)) / rows;
+        }
 
-        final gridWidth = cell * cols + gap * (cols - 1);
-        final gridHeight = cell * rows + gap * (rows - 1);
+        // Hitta minsta cellstorleken – men om den blir <= 0, rita inget.
+        final double cellSize =
+            math.min(cellFromWidth, cellFromHeight);
 
-        // Centrera gridet inom ytan
-        final startX = (totalWidth - gridWidth) / 2;
-        final startY = (totalHeight - gridHeight) / 2;
+        if (!cellSize.isFinite || cellSize <= 0) {
+          return const SizedBox.shrink();
+        }
 
-        double xAt(int col) => startX + col * (cell + gap);
-        double yAt(int row) => startY + row * (cell + gap);
+        final double gridWidth =
+            cellSize * cols + gap * (cols - 1);
+        final double gridHeight =
+            cellSize * rows + gap * (rows - 1);
 
-        Widget btn(String label, int col, int row) => Positioned(
-              left: xAt(col),
-              top: yAt(row),
-              width: cell,
-              height: cell,
+        Widget place(
+          String label, {
+          required int col,
+          required int row,
+          int colSpan = 1,
+          int rowSpan = 1,
+          bool isClear = false,
+        }) {
+          final double left = col * (cellSize + gap);
+          final double top = row * (cellSize + gap);
+          final double width =
+              cellSize * colSpan + gap * (colSpan - 1);
+          final double height =
+              cellSize * rowSpan + gap * (rowSpan - 1);
+
+          return Positioned(
+            left: left,
+            top: top,
+            width: width,
+            height: height,
+            child: GestureDetector(
+              onLongPress: isClear ? onLongClear : null,
               child: CalcButton(
                 label: label,
                 onTap: () => onTap(label),
-                buttonKey: Key('btn-${keySuffix(label)}'),
               ),
-            );
+            ),
+          );
+        }
 
-        Widget btnWide(String label, int col, int row) => Positioned(
-              left: xAt(col),
-              top: yAt(row),
-              width: cell * 2 + gap,
-              height: cell,
-              child: CalcButton(
-                label: label,
-                onTap: () => onTap(label),
-                buttonKey: Key('btn-${keySuffix(label)}'),
+        return Align(
+          alignment: Alignment.bottomCenter,
+          child: SizedBox(
+            width: gridWidth + horizontalPadding * 2,
+            height: gridHeight,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
               ),
-            );
+              child: Stack(
+                children: [
+                  // Rad 1: 7 8 9 ÷
+                  place('7', col: 0, row: 0),
+                  place('8', col: 1, row: 0),
+                  place('9', col: 2, row: 0),
+                  place('÷', col: 3, row: 0),
 
-        Widget btnTall(String label, int col, int row) => Positioned(
-              left: xAt(col),
-              top: yAt(row),
-              width: cell,
-              height: cell * 2 + gap,
-              child: CalcButton(
-                label: label,
-                onTap: () => onTap(label),
-                buttonKey: Key('btn-${keySuffix(label)}'),
+                  // Rad 2: 4 5 6 ×
+                  place('4', col: 0, row: 1),
+                  place('5', col: 1, row: 1),
+                  place('6', col: 2, row: 1),
+                  place('×', col: 3, row: 1),
+
+                  // Rad 3: 1 2 3 −
+                  place('1', col: 0, row: 2),
+                  place('2', col: 1, row: 2),
+                  place('3', col: 2, row: 2),
+                  place('−', col: 3, row: 2),
+
+                  // Rad 4: 0 , % + (övre halvan av +)
+                  place('0', col: 0, row: 3),
+                  place(',', col: 1, row: 3),
+                  place('%', col: 2, row: 3),
+                  // '+' två rader hög: rader 3–4
+                  place('+', col: 3, row: 3, rowSpan: 2),
+
+                  // Rad 5: C  = =  (nedre raden)
+                  place('C', col: 0, row: 4, isClear: true),
+                  // '=' två kolumner bred: kolumn 1–2
+                  place('=', col: 1, row: 4, colSpan: 2),
+                ],
               ),
-            );
-
-        Widget btnClear(int col, int row) => Positioned(
-              left: xAt(col),
-              top: yAt(row),
-              width: cell,
-              height: cell,
-              child: GestureDetector(
-                onLongPress: onLongClear,
-                child: CalcButton(
-                  label: 'C',
-                  onTap: () => onTap('C'),
-                  buttonKey: const Key('btn-C'),
-                ),
-              ),
-            );
-
-        return Stack(
-          children: [
-            // Rad 0
-            btn('7', 0, 0),
-            btn('8', 1, 0),
-            btn('9', 2, 0),
-            btn('÷', 3, 0),
-
-            // Rad 1
-            btn('4', 0, 1),
-            btn('5', 1, 1),
-            btn('6', 2, 1),
-            btn('×', 3, 1),
-
-            // Rad 2
-            btn('1', 0, 2),
-            btn('2', 1, 2),
-            btn('3', 2, 2),
-            btn('−', 3, 2),
-
-            // Rad 3
-            btn('0', 0, 3),
-            btn(',', 1, 3),
-            btn('%', 2, 3),
-
-            // Rad 4 (C + “=”)
-            btnClear(0, 4),
-            btnWide('=', 1, 4),
-
-            // + är två rader hög (rad 3–4, kolumn 3)
-            btnTall('+', 3, 3),
-          ],
+            ),
+          ),
         );
       },
     );

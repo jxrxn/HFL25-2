@@ -39,37 +39,42 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           const cols = 4;
-          const rows = 5;
           const gap = 3.0;
 
           final width = constraints.maxWidth;
-          final height = constraints.maxHeight;
 
-          // Mindre marginal på mobil, lite större på större skärmar
+          // Yttre marginaler/innerspalt – samma logik som tidigare
           final outerMargin = width < 500 ? 16.0 : 32.0;
           final horizontalPadding = width < 500 ? 8.0 : 16.0;
 
-          final usableWidth = width - outerMargin * 2;
-          final usableHeight = height - outerMargin * 2;
+          // Tillgänglig bredd för själva knapprutnätet (utan outerMargin och padding)
+          double innerWidth =
+              width - outerMargin * 2 - horizontalPadding * 2;
 
-          // Samma logik som i ButtonGrid för att räkna fram cellstorlek
-          final maxGridWidthByWidth = usableWidth - horizontalPadding * 2;
-          final cellSizeByWidth =
-              (maxGridWidthByWidth - gap * (cols - 1)) / cols;
+          // Skydda mot konstiga constraint-lägen (innerWidth kan inte vara negativ)
+          if (innerWidth < 0) innerWidth = 0;
 
-          final buttonAreaHeight = usableHeight * 2 / 3;
-          final cellSizeByHeight =
-              (buttonAreaHeight - gap * (rows - 1)) / rows;
+          // Minsta bredd som bara gapsen tar
+          final minGapWidth = gap * (cols - 1);
 
-          final cell = cellSizeByWidth < cellSizeByHeight
-              ? cellSizeByWidth
-              : cellSizeByHeight;
+          double cellSize;
+          double gridWidth;
 
-          // Själva gridets bredd (4 knappar + 3 gap)
-          final gridWidth = cell * cols + gap * (cols - 1);
+          if (innerWidth <= minGapWidth) {
+            // Extremfall (borde aldrig hända på riktiga telefoner):
+            // gör cellerna 0 breda så vi åtminstone inte kraschar.
+            cellSize = 0;
+            gridWidth = innerWidth;
+          } else {
+            cellSize = (innerWidth - minGapWidth) / cols;
+            gridWidth = cellSize * cols + minGapWidth;
+          }
 
-          // Yttre bredd: grid + padding på båda sidor
-          final outerWidth = gridWidth + horizontalPadding * 2;
+          // Yttre bredd för display + grid (inkl. horisontell padding),
+          // klampad så att den aldrig blir negativ eller större än tillgänglig bredd.
+          double outerWidth = gridWidth + horizontalPadding * 2;
+          if (outerWidth < 0) outerWidth = 0;
+          if (outerWidth > width) outerWidth = width;
 
           return Padding(
             padding: EdgeInsets.symmetric(
@@ -78,7 +83,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             ),
             child: Column(
               children: [
-                // ===== DISPLAY – samma bredd som knapparna =====
+                // DISPLAY
                 Expanded(
                   flex: 1,
                   child: Center(
@@ -94,7 +99,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
                 const SizedBox(height: 12),
 
-                // ===== GRID – samma bredd, lite luft mot nederkant =====
+                // GRID
                 Expanded(
                   flex: 2,
                   child: Center(
