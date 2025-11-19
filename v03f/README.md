@@ -11,8 +11,8 @@ Räknaren använder strängar och Decimal-biblioteket istället för double (64-
 999 999 999.2 →  
 999 999 999.200000047684  
 
-Max heltalsstorlek:  
-999 999 999 999 999 999 999 999 999 (27 siffror)  
+Max heltalsstorlek, 27 siffror:  
+999 999 999 999 999 999 999 999 999  
 10²⁷ – 1  
 ≈ 1 kvadriljard (lång skala, Sverige)  
 ≈ 1 octillion (kort skala, t.ex. USA)  
