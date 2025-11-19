@@ -6,9 +6,11 @@ En miniräknare byggd i **Flutter** — med live-uträkning, mörkt/ljust läge,
 
 ## Funktioner
 
-### Exakt beräkning med `Decimal`
-Räknaren använder strängar och `Decimal`-biblioteket i stället för `double` (64-bitars binärt flyttal) vilket undviker avrundningsfel som:  
-`999 999 999.2 → 999 999 999.200000047684`.  
+### Exakt beräkning med Decimal
+Räknaren använder strängar och Decimal-biblioteket i stället för double (64-bitars binärt flyttal) vilket undviker avrundningsfel som:  
+999 999 999.2 →  
+999 999 999.200000047684  
+
 Max heltalsstorlek:  
 999 999 999 999 999 999 999 999 999 (27 siffror)  
 10²⁷ – 1
