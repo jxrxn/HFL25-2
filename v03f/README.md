@@ -2,7 +2,7 @@
 
 En miniräknare byggd i **Flutter**  
 Live-uträkning, mörkt/ljust läge, tusentalsavgränsning, korrekt procentlogik och korrekta decimaler (ingen flyttalsavrundning).
-
+Decimaltecken visas som komma i remsa och resultat  
 ---
 
 ## Funktioner
@@ -17,12 +17,6 @@ Max heltalsstorlek, 27 siffror:
 10²⁷ – 1  
 ≈ 1 kvadriljard (lång skala, Sverige)  
 ≈ 1 octillion (kort skala, t.ex. USA)  
-
-- 100% stabila resultat  
-- inga dolda avrundningar  
-- exakt procenthantering  
-- konsekvent live-uträkning
-- decimaltecken visas som komma i remsa och resultat  
 
 ---
 
