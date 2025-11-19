@@ -8,9 +8,10 @@ En miniräknare byggd i **Flutter** — med live-uträkning, mörkt/ljust läge,
 
 ### 🔢 Exakt beräkning med `Decimal`
 Räknaren använder strängar och `Decimal`-biblioteket i stället för `double` (64-bitars binärt flyttal) vilket eliminerar klassiska avrundningsfel som: `999 999 999.2 → 999 999 999.200000047684`.  
-Gränsen för räknaren är 27 siffror i heltalsdelen.  
-10²⁷ – 1 ≈ 1 kvadriljard (lång skala, Sverige)  
-10²⁷ – 1 ≈ 1 octillion (kort skala, t.ex. USA)  
+Max heltalsstorlek:  
+999 999 999 999 999 999 999 999 999 (27 siffror)
+- 10²⁷ – 1 ≈ 1 kvadriljard (lång skala, Sverige)  
+- 10²⁷ – 1 ≈ 1 octillion (kort skala, t.ex. USA)  
 
 Det betyder:
 - 100% stabila resultat  
@@ -68,16 +69,6 @@ Automatiskt efter systemtema, eller manuellt via AppBar-knappen.
 
 ---
 
-### Begränsningar (för stabilitet)
-
-Räknaren har säkra gränser inspirerade av iOS och Android:
-	•	Max heltalsstorlek: 999 999 999 999 999 (15 siffror)
-	•	Max totala teckenlängd: 20
-	•	För stora tal returnerar Error
-	•	Detta garanterar snabb och stabil
-
- ---
-
 ## Struktur
 
 ```text
@@ -94,7 +85,6 @@ v03f/
  ├─ test/
  │   └─ calculator_live_test.dart
  │   ├─ calculator_strip_test.dart
- │   └─ calculator_test.dart
  └─ pubspec.yaml
  ```
  ---
