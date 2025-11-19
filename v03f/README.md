@@ -1,8 +1,10 @@
 # Miniräknare
 
 En miniräknare byggd i **Flutter**  
-Live-uträkning, mörkt/ljust läge, tusentalsavgränsning, korrekt procentlogik och korrekta decimaler (ingen flyttalsavrundning).
+Live-uträkning, mörkt/ljust läge, tusentalsavgränsning, 
+korrekt procentlogik och korrekta decimaler (ingen flyttalsavrundning).  
 Decimaltecken visas som komma i remsa och resultat  
+
 ---
 
 ## Funktioner
