@@ -6,8 +6,8 @@ En miniräknare byggd i **Flutter** — med live-uträkning, mörkt/ljust läge,
 
 ## Funktioner
 
-### Exakt beräkning med Decimal
-Räknaren använder strängar och Decimal-biblioteket istället för double (64-bitars binärt flyttal) vilket undviker avrundningsfel som:  
+### Exakt beräkning  
+Räknaren använder Decimal-biblioteket istället för double (64-bitars binärt flyttal) vilket undviker avrundningsfel som:  
 999 999 999.2 →  
 999 999 999.200000047684  
 
