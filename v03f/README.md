@@ -7,13 +7,14 @@ En miniräknare byggd i **Flutter** — med live-uträkning, mörkt/ljust läge,
 ## Funktioner
 
 ### 🔢 Exakt beräkning med `Decimal`
-Räknaren använder strängar och `Decimal`-biblioteket i stället för `double` (64-bitars binärt flyttal) vilket eliminerar klassiska avrundningsfel som: `999 999 999.2 → 999 999 999.200000047684`.  
+Räknaren använder strängar och `Decimal`-biblioteket i stället för `double` (64-bitars binärt flyttal) vilket undviker avrundningsfel som:  
+`999 999 999.2 → 999 999 999.200000047684`.  
 Max heltalsstorlek:  
-999 999 999 999 999 999 999 999 999 (27 siffror)
-- 10²⁷ – 1 ≈ 1 kvadriljard (lång skala, Sverige)  
-- 10²⁷ – 1 ≈ 1 octillion (kort skala, t.ex. USA)  
+999 999 999 999 999 999 999 999 999 (27 siffror)  
+10²⁷ – 1
+≈ 1 kvadriljard (lång skala, Sverige)  
+≈ 1 octillion (kort skala, t.ex. USA)  
 
-Det betyder:
 - 100% stabila resultat  
 - inga dolda avrundningar  
 - exakt procenthantering  
