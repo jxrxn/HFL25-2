@@ -53,8 +53,8 @@ Den övre remsan visar alltid aktuellt uttryck:
 ---
 
 ### Rensa & redigera
--	Kort tryck på C: radera senaste  
--	Långt tryck på C: allt rensas (AC)  
+-	Kort tryck på 'C' raderar det senaste  
+-	Långt tryck på 'C' allt rensas (AC)  
 
 ---
 
