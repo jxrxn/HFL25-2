@@ -3,9 +3,9 @@ import 'package:decimal/decimal.dart';
 
 class CalculatorEngine {
   // ===== Gränser =====
-  static const int _maxSigDigits = 15;            // max signifikanta siffror
+  static const int _maxSigDigits = 27;            // max signifikanta siffror
   static final Decimal _maxAbs =
-      Decimal.parse('999999999999999');           // gräns i Decimal
+      Decimal.parse('999999999999999999999999999');           // gräns i Decimal
 
   /// Hjälp: gör en exakt division a/b och får tillbaka Decimal.
   static Decimal _divDecimal(Decimal a, Decimal b) {
@@ -32,45 +32,36 @@ class CalculatorEngine {
 
   // ===== Publika läsvärden =====
 
-  /// Det som visas i stora displayen (live-resultat).
+  /// Det som visas i stora displayen (live-resultat / inmatning).
   String get display {
     // 1) Error-läge
     if (_error != null) return 'Error';
 
-    // 2) Försök live-preview av hela uttrycket,
-    //    MEN hoppa över om vi är mitt i en hängande decimal (1., -., osv).
-    final hasHangingDot =
-        _cur == '.' || _cur == '-.' || (_cur.endsWith('.') && _cur.length > 1);
+    // 2) Kolla om vi är mitt i en "hängande" decimal
+    //    – men bara när vi skriver första talet (inga tokens än).
+    //    Efter en operator (andra talet) vill vi gärna behålla live-preview
+    //    tills användaren börjar skriva riktiga siffror.
+    final bool hasHangingDot =
+        _tokens.isEmpty &&
+        (_cur == '.' ||
+         _cur == '-.' ||
+         (_cur.endsWith('.') && _cur.length > 1));
 
+    // 3) Försök räkna ut live-preview av uttrycket
     final preview = _evalPreview();
-    if (preview != null && !hasHangingDot) {
+
+    // Visa live-resultat *bara* när:
+    // - vi inte har en hängande decimal, och
+    // - det finns ett riktigt uttryck (tokens) eller vi nyss tryckt '='
+    if (preview != null &&
+        !hasHangingDot &&
+        (_tokens.isNotEmpty || _justEvaluated)) {
       return _fmt(preview);
     }
 
-    // 3) Om inget preview (eller vi har hängande decimal), visa _cur.
-
-    // Tomt → visa 0
-    if (_cur.isEmpty) return '0';
-
-    // Specialfall: bara punkt
-    if (_cur == '.') return '0.';
-
-    // Specialfall: negativt tal där bara '-' och '.' är inskrivna
-    if (_cur == '-.') return '-0.';
-
-    // Om vi har t.ex. "1." eller "1234.", visa precis så.
-    if (_cur.endsWith('.') && _cur.length > 1) {
-      return _cur;
-    }
-
-    // 4) Vanligt fall: försök tolka _cur som Decimal och formatera snyggt.
-    final d = _toDecimal(_cur);
-    if (d != null) {
-      return _fmt(d);
-    }
-
-    // 5) Fallback: om _cur inte går att parse:a (ska nästan aldrig hända)
-    return _cur;
+    // 4) Annars: visa pågående inmatning snyggt formatterad
+    // (behåller alla decimalsiffror + tusentalsmellanrum)
+    return _formatInputForDisplay(_cur);
   }
 
   /// Den lilla remsan med uttrycket.
@@ -398,76 +389,194 @@ class CalculatorEngine {
     _justEvaluated = true;
   }
 
-// ======== Live-preview (tokens + current) ========
-Decimal? _evalPreview() {
-  if (_error != null) return null;
+  // ======== Live-preview (tokens + current) ========
+  Decimal? _evalPreview() {
+    if (_error != null) return null;
 
-  // Inga tokens alls → bara current
-  if (_tokens.isEmpty) {
-    final d = _toDecimal(_cur);
-    return d;
-  }
-
-  // Börja med en kopia av tokens
-  final seq = <_Tok>[..._tokens];
-
-  final d = _toDecimal(_cur);
-  final hasMeaningfulCurrent = _curAsPercentText != null ||
-      (d != null && !(_cur == '0' && !_justEvaluated));
-
-  if (seq.isNotEmpty && seq.last is _OpTok) {
-    if (hasMeaningfulCurrent) {
-      // Ex: 20 + 3 × 2 → tokens: [20, +, 3, ×], cur: "2"
-      seq.add(_NumTok(d ?? Decimal.zero));
-    } else {
-      // Ex: 20 + 3 × → visa 20 + 3 (ta bort sista operatorn)
-      seq.removeLast();
+    // Inga tokens alls → bara current
+    if (_tokens.isEmpty) {
+      final d = _toDecimalLenient(_cur);
+      return d;
     }
-  } else {
-    // Slutar på tal: oftast har vi redan allt i tokens.
-    // Extra specialfall: om vi har en procenttext aktiv men inget nytt tal,
-    // kan vi behöva lägga till värdet som tal i sekvensen.
-    if (_curAsPercentText != null && d != null) {
-      // Se till att inte lägga in dubbelt om seq redan slutar med samma värde.
-      if (seq.isEmpty || !(seq.last is _NumTok && (seq.last as _NumTok).value == d)) {
-        seq.add(_NumTok(d));
+
+    // Börja med en kopia av tokens
+    final seq = <_Tok>[..._tokens];
+
+    // Tolka pågående inmatning lite snällare (klarar "0.", ".5", "-.5" etc)
+    final d = _toDecimalLenient(_cur);
+
+    final hasMeaningfulCurrent = _curAsPercentText != null ||
+        (d != null && !(_cur == '0' && !_justEvaluated));
+
+    if (seq.isNotEmpty && seq.last is _OpTok) {
+      if (hasMeaningfulCurrent) {
+        // Ex: 20 + 3 × 2 → tokens: [20, +, 3, ×], cur: "2"
+        seq.add(_NumTok(d ?? Decimal.zero));
+      } else {
+        // Ex: 20 + 3 × → visa 20 + 3 (ta bort sista operatorn)
+        seq.removeLast();
+      }
+    } else {
+      // Slutar på tal. Om vi är i ett procentläge kan vi behöva lägga till
+      // det tolkade percent-värdet som nytt tal i sekvensen.
+      if (_curAsPercentText != null && d != null) {
+        if (seq.isEmpty ||
+            !(seq.last is _NumTok &&
+              (seq.last as _NumTok).value == d)) {
+          seq.add(_NumTok(d));
+        }
       }
     }
-  }
 
-  if (seq.isEmpty) return null;
+    if (seq.isEmpty) return null;
 
-  // 🔹 SPECIALFALL: "… ÷ 0" i live-preview
-  // Om sekvensen slutar med Op('/') följt av Num(0) → avbryt bara preview
-  if (seq.length >= 2 &&
-      seq[seq.length - 1] is _NumTok &&
-      seq[seq.length - 2] is _OpTok) {
-    final lastNum = seq.last as _NumTok;
-    final lastOp  = seq[seq.length - 2] as _OpTok;
+    // --- Ny logik: hantera "a * 0," och "a ÷ 0," i live-preview ---
+    if (seq.length >= 2 &&
+        seq[seq.length - 1] is _NumTok &&
+        seq[seq.length - 2] is _OpTok) {
+      final lastNum = seq.last as _NumTok;
+      final lastOp  = seq[seq.length - 2] as _OpTok;
 
-    if (lastOp.op == '/' && lastNum.value == Decimal.zero) {
-      // Användaren har skrivit a ÷ 0, men kanske är på väg mot 0,2
-      // → ingen Error ännu, bara ingen live-preview.
-      return null;
+      // Hjälp: avgör om current-texten fortfarande betyder exakt 0
+      bool isZeroCurrent() {
+        if (_cur.isEmpty) return false;
+        // internt använder vi redan '.' men vi gör det robust ändå
+        final normalized = _cur.replaceAll(',', '.');
+        final dec = _toDecimalLenient(normalized);
+        return dec != null && dec == Decimal.zero;
+      }
+
+      // Fall:
+      //  - tokens representerar första "a op" (t.ex. 333 ÷)
+      //  - current är fortfarande nån variant av 0 (0, 0., 0.0 …)
+      //  - op är * eller ÷
+      //
+      // Då vill vi i live-preview *ignorera* andra talet
+      // och bara visa "a" tills användaren skriver en icke-noll decimal.
+      if (isZeroCurrent() &&
+          (lastOp.op == '*' || lastOp.op == '/') &&
+          _tokens.length == 2) {
+        // _tokens är då t.ex. [Num(a), Op(op)]
+        final truncated = <_Tok>[..._tokens];
+
+        // Plocka bort hängande operator så vi får bara första talet
+        if (truncated.isNotEmpty && truncated.last is _OpTok) {
+          truncated.removeLast();
+        }
+
+        if (truncated.isNotEmpty) {
+          final leftVal = _evaluate(truncated);
+          if (leftVal != null && !_exceedsLimit(leftVal)) {
+            return leftVal;
+          }
+        }
+      }
+
+      // Safety: om vi ändå skulle hamna med ett riktigt "… ÷ 0"
+      // (t.ex. via klistrad text) så slå bara av live-preview.
+      if (lastOp.op == '/' && lastNum.value == Decimal.zero) {
+        return null;
+      }
     }
-  }
 
-  final val = _evaluate(seq);  // OBS: samma som du hade innan
-  if (val == null || _exceedsLimit(val)) return null;
-  return val;
-}
+    final val = _evaluate(seq);
+    if (val == null || _exceedsLimit(val)) return null;
+    return val;
+  }
 
   // ======== Remsan ========
 
+  // Gruppera heltal med smalt mellanrum (U+202F): "12345" -> "12 345"
+  String _groupIntString(String digits) {
+    // Ta bort ledande nollor, men lämna minst en nolla kvar
+    var s = digits.replaceFirst(RegExp(r'^0+(?!$)'), '');
+    final len = s.length;
+    if (len <= 3) return s;
+
+    const thinSpace = '\u202F';
+
+    final buf = StringBuffer();
+    final firstGroupLen = len % 3 == 0 ? 3 : len % 3;
+
+    buf.write(s.substring(0, firstGroupLen));
+    for (var i = firstGroupLen; i < len; i += 3) {
+      buf.write(thinSpace);
+      buf.write(s.substring(i, i + 3));
+    }
+    return buf.toString();
+  }
+
+  /// Formattera ett Decimal-värde för remsan:
+  /// - grupperar heltalsdelen med mellanslag
+  /// - byter '.' -> ',' som decimaltecken
+  String _formatDecimalForStrip(Decimal d) {
+    final plain = _stripZeros(_toPlain(d)); // t.ex. "12345.00" -> "12345"
+    final parts = plain.split('.');
+    final intPart = parts[0];
+    final fracPart = parts.length > 1 ? parts[1] : '';
+
+    final groupedInt = _groupIntString(intPart);
+
+    if (fracPart.isEmpty) {
+      return groupedInt;
+    } else {
+      return '$groupedInt,$fracPart';
+    }
+  }
+
+  /// Formattera _cur textuellt för remsan:
+  /// - behåller alla decimalsiffror (inkl. nollor)
+  /// - grupperar heltalsdelen med mellanslag
+  /// - byter '.' -> ',' som decimaltecken
+  String _formatInputForStrip(String cur) {
+    if (cur.isEmpty) return '';
+
+    var neg = cur.startsWith('-');
+    var s = neg ? cur.substring(1) : cur;
+
+    final hasDot = s.contains('.');
+
+    String intPart;
+    String fracPart = '';
+
+    if (hasDot) {
+      final parts = s.split('.');
+      intPart = parts[0].isEmpty ? '0' : parts[0];
+      if (parts.length > 1) {
+        // Behåll exakt det användaren skrivit efter punkten
+        fracPart = parts[1];
+      }
+    } else {
+      intPart = s.isEmpty ? '0' : s;
+    }
+
+    final groupedInt = _groupIntString(intPart);
+
+    final buf = StringBuffer();
+    if (neg && (groupedInt != '0' || hasDot || fracPart.isNotEmpty)) {
+      buf.write('-');
+    }
+    buf.write(groupedInt);
+
+    if (hasDot) {
+      buf.write(',');      // svensk decimal
+      buf.write(fracPart); // alla decimalsiffror, även nollor
+    }
+
+    return buf.toString();
+  }
+
   String _sequenceToStrip(List<_Tok> seq) {
+    const thinSpace = '\u202F';
     final buf = StringBuffer();
     for (final t in seq) {
       if (t is _NumTok) {
-        // Samma logik som tidigare, men byt . → , för visning
-        final plain = _stripZeros(_toPlain(t.value));
-        buf.write(plain.replaceAll('.', ','));
+        buf.write(_formatDecimalForStrip(t.value));
       } else if (t is _OpTok) {
-        buf.write(' ${_prettyOp(t.op)} ');
+        // tidigare: ' ${_prettyOp(t.op)} '
+        buf.write(thinSpace);
+        buf.write(_prettyOp(t.op));
+        buf.write(thinSpace);
       }
     }
     return buf.toString();
@@ -488,24 +597,14 @@ Decimal? _evalPreview() {
         return _curAsPercentText!;
       }
 
-      // b) Specialfall: användaren har tryckt komma men ingen decimalsiffra än
-      if (_cur == '.') return '0,';
-      if (_cur == '-.') return '-0,';
-      if (_cur.endsWith('.') && _cur.length > 1) {
-        // Ex: "1." eller "1234."
-        return _cur.replaceAll('.', ',');
-      }
-
-      // c) Vanligt tal: visa det så fort det inte bara är "0"
+      // b) Om det bara är "0" i början, visa inget i remsan
+      //    (första nollan ska inte lägga sig på remsan)
       if (_cur.isEmpty || _cur == '0') {
         return '';
       }
 
-      final d = _toDecimal(_cur);
-      if (d == null) return '';
-
-      final plain = _stripZeros(_toPlain(d));
-      return plain.replaceAll('.', ',');
+      // c) Vanligt tal: formattera textuellt utifrån _cur
+      return _formatInputForStrip(_cur);
     }
 
     // 2) Det finns tokens ⇒ bygg upp "a + b × ..." + current-del
@@ -517,24 +616,22 @@ Decimal? _evalPreview() {
         // t.ex. "10 %"
         buf.write(_curAsPercentText);
       } else {
-        // Specialfall: komma utan decimalsiffra även här
-        if (_cur == '.') {
-          buf.write('0,');
-        } else if (_cur == '-.') {
-          buf.write('-0,');
-        } else if (_cur.endsWith('.') && _cur.length > 1) {
-          buf.write(_cur.replaceAll('.', ','));
-        } else {
-          final d = _toDecimal(_cur);
-          if (d != null && !(_cur == '0' && !_justEvaluated)) {
-            final plain = _stripZeros(_toPlain(d));
-            buf.write(plain.replaceAll('.', ','));
-          }
+        // 🔹 Nytt: skriv ALLTID current, även "0"
+        // (så "333 ÷ 0" och "333 × 0" syns direkt)
+        if (_cur.isNotEmpty) {
+          buf.write(_formatInputForStrip(_cur));
         }
       }
     }
 
     return buf.toString();
+  }
+
+    // === Display-helper ===
+  // Använder samma logik som remsan, men faller tillbaka på '0' om resultatet är tomt.
+  String _formatInputForDisplay(String cur) {
+    final s = _formatInputForStrip(cur);
+    return s.isEmpty ? '0' : s;
   }
 
   // ======== Utvärdering (Shunting-yard + RPN) ========
@@ -655,6 +752,30 @@ Decimal? _evalPreview() {
     } catch (_) {
       return null;
     }
+  }
+
+    /// Lite snällare parser som klarar "1.", ".5", "-.5" osv
+  static Decimal? _toDecimalLenient(String s) {
+    if (s.isEmpty || s == '-' || s == '+') return null;
+
+    // "123." eller "-123." → tolka som "123" / "-123"
+    if (s.endsWith('.') && s.length > 1) {
+      final withoutDot = s.substring(0, s.length - 1);
+      return _toDecimal(withoutDot);
+    }
+
+    // ".5" → "0.5"
+    if (s.startsWith('.') && s.length > 1) {
+      return _toDecimal('0$s');
+    }
+
+    // "-.5" → "-0.5"
+    if (s.startsWith('-.') && s.length > 2) {
+      return _toDecimal('-0${s.substring(2)}');
+    }
+
+    // Annars: vanlig tolkning
+    return _toDecimal(s);
   }
 
   static bool _exceedsLimit(Decimal v) => v.abs() > _maxAbs;
