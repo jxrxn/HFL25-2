@@ -33,7 +33,7 @@ Exempel:
 ### Beräkningshistorik
 Den övre remsan visar alltid aktuellt uttryck:
 - Visar siffror och operatorer så fort de skrivs  
-- Kan scrollas i sidled och rullar automatiskt till höger för att visa senaste delen  
+- Kan scrollas i sidled och rullar automatiskt för att visa senaste delen  
 - Visar även kompletta uttryck efter `=`:  
   `20 + 3 × 2 = 26`
 
