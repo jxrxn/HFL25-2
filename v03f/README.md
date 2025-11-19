@@ -21,6 +21,7 @@ Max heltalsstorlek, 27 siffror:
 - inga dolda avrundningar  
 - exakt procenthantering  
 - konsekvent live-uträkning
+- decimaltecken visas som komma i remsa och resultat  
 
 ---
 
@@ -54,9 +55,8 @@ Den övre remsan visar alltid aktuellt uttryck:
 ---
 
 ### Rensa & redigera
--	Kort tryck på C: backspace
--	Långt tryck på C: allt rensas (AC)
--	Decimaltecken visas som komma i remsa och resultat
+-	Kort tryck på C: radera senaste  
+-	Långt tryck på C: allt rensas (AC)  
 
 ---
 
