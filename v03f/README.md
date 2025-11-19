@@ -39,7 +39,7 @@ Den övre remsan visar alltid aktuellt uttryck:
 
 ---
 
-### Procentlogik (korrekt matematiskt beteende)
+### Procentlogik  
 ```text
 | Uträkning        | Tolkas som                | Resultat |  
 |------------------|---------------------------|----------|  
