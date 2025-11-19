@@ -13,7 +13,7 @@ Räknaren använder strängar och Decimal-biblioteket istället för double (64-
 
 Max heltalsstorlek:  
 999 999 999 999 999 999 999 999 999 (27 siffror)  
-10²⁷ – 1
+10²⁷ – 1  
 ≈ 1 kvadriljard (lång skala, Sverige)  
 ≈ 1 octillion (kort skala, t.ex. USA)  
 
