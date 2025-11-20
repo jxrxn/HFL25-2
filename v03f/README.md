@@ -1,12 +1,12 @@
 # Miniräknare
 
-## En miniräknare byggd i Flutter    
+### En miniräknare byggd i Flutter    
 Live-uträkning, mörkt/ljust läge, tusentalsavgränsning, korrekt procentlogik och korrekta decimaler (ingen flyttalsavrundning).  
 Korrekt operatorprioritet (×/÷ före +/−). Decimaltecken visas som komma.  
 
 ---
 
-## Funktioner
+# Funktioner
 
 ### Exakt beräkning  
 Max heltalsstorlek, 27 siffror:  
