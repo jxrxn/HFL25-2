@@ -33,7 +33,7 @@ class DisplayWidget extends StatelessWidget {
       buf.write(intPart[i]);
       count++;
       if (count == 3 && i != 0) {
-        buf.write('\u2009'); // tunt mellanrum
+        buf.write('\u202F'); // tunt mellanrum
         count = 0;
       }
     }
@@ -70,25 +70,51 @@ class DisplayWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ===== ÖVRE REMSAN – horisontellt scrollbar =====
-          SizedBox(
-            height: (theme.textTheme.bodyLarge?.fontSize ?? 16) * 1.4,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                reverse: true, // visa slutet (senaste) till höger
-                child: Text(
-                  displayStrip,
-                  textAlign: TextAlign.right,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: stripColor,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-            ),
+// ===== ÖVRE REMSAN – horisontellt scrollbar & klickbar =====
+SizedBox(
+  height: (theme.textTheme.bodyLarge?.fontSize ?? 16) * 1.4,
+  child: GestureDetector(
+    behavior: HitTestBehavior.opaque, // hela ytan blir klickbar
+    onTap: () {
+      if (displayStrip.isEmpty) return;
+
+      Clipboard.setData(ClipboardData(text: displayStrip));
+
+      final snackBar = SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: isDark
+            ? scheme.surfaceContainerLow
+            : scheme.surfaceContainerHighest,
+        content: Text(
+          'Uträkning kopierad',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: scheme.onSurface,
           ),
+        ),
+        duration: const Duration(milliseconds: 900),
+      );
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(snackBar);
+    },
+    child: Align(
+      alignment: Alignment.centerRight,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        reverse: true, // visa slutet (senaste) till höger
+        child: Text(
+          displayStrip,
+          textAlign: TextAlign.right,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: stripColor,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ),
+    ),
+  ),
+),
 
           const SizedBox(height: 8),
 
