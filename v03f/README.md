@@ -1,10 +1,8 @@
 # Miniräknare
 
 ## En miniräknare byggd i Flutter    
-Live-uträkning, mörkt/ljust läge, tusentalsavgränsning, 
-korrekt procentlogik och korrekta decimaler (ingen flyttalsavrundning).  
-Korrekt operatorprioritet (×/÷ före +/−).  
-Decimaltecken visas som komma.  
+Live-uträkning, mörkt/ljust läge, tusentalsavgränsning, korrekt procentlogik och korrekta decimaler (ingen flyttalsavrundning).  
+Korrekt operatorprioritet (×/÷ före +/−). Decimaltecken visas som komma.  
 
 ---
 
