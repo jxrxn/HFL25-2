@@ -17,6 +17,20 @@ class CalculatorEngine {
     );
   }
 
+// Hjälpare för att kunna kopiera remsan
+// Räknar signifikanta siffror i ett tal skrivet som sträng.
+// Vi ignorerar minus, kommatecken, punkt och inledande nollor.
+int _countSigDigits(String s) {
+  // Ta bort minus och decimaltecken
+  var clean = s.replaceAll('-', '').replaceAll('.', '').replaceAll(',', '');
+
+  // Ta bort ledande nollor
+  clean = clean.replaceFirst(RegExp(r'^0+'), '');
+
+  if (clean.isEmpty) return 0;
+  return clean.length;
+}
+
   // ===== Intern state =====
   final List<_Tok> _tokens = <_Tok>[]; // infix: Num, Op, Num, Op, ...
   String _cur = '0'; // pågående tal som text
@@ -88,15 +102,23 @@ class CalculatorEngine {
   /// - '%'
   /// - 'C'  (kort tryck = backspace)
   /// - '=', '+', '-', '−', '×', '÷', '*', '/'
-  void input(String v) {
-    // Om vi är i error-läge: låt C eller en siffra (eller decimal) börja om.
-    if (_error != null) {
-      if (v == 'C' || _isDigit(v) || v == ',' || v == '.') {
-        clearAll();
-      } else {
-        return; // ignorera annat tills man "bryter sig ur" med C/siffra
-      }
+void input(String v) {
+  // Om vi är i error-läge: låt C eller en siffra (eller decimal) börja om.
+  if (_error != null) {
+    if (v == 'C' || _isDigit(v) || v == ',' || v == '.') {
+      clearAll();
+    } else {
+      return; // ignorera annat tills man "bryter sig ur" med C/siffra
     }
+  }
+
+  // === NYTT: max 27 signifikanta siffror, men bara för siffror ===
+  final bool isDigit = _isDigit(v);
+  if (isDigit && _countSigDigits(_cur) >= _maxSigDigits) {
+    // Vi har redan max antal siffror i det aktuella talet.
+    // Tillåt fortfarande operatorer, =, C osv – de stoppas inte här
+    return;
+  }
 
     // Normalisera decimal
     if (v == ',') v = '.';

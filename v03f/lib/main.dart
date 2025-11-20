@@ -36,6 +36,7 @@ class _CalculatorAppState extends State<CalculatorApp> {
 
     return MaterialApp(
       title: 'Flutter Calculator',
+      debugShowCheckedModeBanner: false,
       theme: light,
       darkTheme: dark,
       themeMode: _mode,
