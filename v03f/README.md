@@ -11,15 +11,16 @@ Decimaltecken visas som komma.
 ## Funktioner
 
 ### Exakt beräkning  
-Räknaren använder Decimal-biblioteket istället för double (64-bitars binärt flyttal) vilket undviker avrundningsfel som:  
-999 999 999.2 →  
-999 999 999.200000047684  
-
 Max heltalsstorlek, 27 siffror:  
 999 999 999 999 999 999 999 999 999  
 10²⁷ – 1  
 ≈ 1 kvadriljard (lång skala, Sverige)  
 ≈ 1 octillion (kort skala, t.ex. USA)  
+
+Räknaren använder Decimal-biblioteket istället för IEEE-754 double precision (64-bit flyttal) vilket undviker avrundningsfel som:  
+999 999 999.2 → 999 999 999.200000047684  
+eller:
+0,1 + 0,2 = 0,30000000000000004
 
 ---
 
