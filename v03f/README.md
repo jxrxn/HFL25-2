@@ -57,9 +57,9 @@ Långt tryck på `C` rensar allt (AC).
 
 ---
 
-### Kopiera resultat
+### Kopiera resultat eller uträkning
 
-Tryck på stora talet för att kopiera till urklipp.
+Tryck på stora talet eller på uträkningen i remsan för att kopiera till urklipp.
 
 ---
 
