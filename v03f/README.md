@@ -86,7 +86,7 @@ Radera
   `Backspace` → C (radera senaste)  
   `Cmd+Backspace` eller `Ctrl+Backspace` (mac) → AC  
   `Ctrl+Backspace` (Win/Linux) → AC  
-  Clear-knappen `⌧` (numeriskt tangentbord) → AC (fungerar bäst i webbläsare)  
+  `⌧` Clear-knappen (på numeriskt tangentbord) → AC (fungerar bäst i webbläsare)  
 
 ---
 
