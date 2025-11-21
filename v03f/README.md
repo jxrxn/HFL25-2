@@ -83,7 +83,7 @@ Beräkna
   `Enter`  
   Numpad `Enter`  
 
-Radera
+Radera  
   `Backspace` → C (radera senaste)  
   `Cmd+Backspace` eller `Ctrl+Backspace` (mac) → AC  
   `Ctrl+Backspace` (Win/Linux) → AC  
