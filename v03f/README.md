@@ -30,7 +30,7 @@ Exempel:
 ---
 
 ### Beräkningshistorik
-Den övre remsan visar alltid aktuellt uttryck:
+Den övre remsan visar beräkningen:
 - Visar siffror och operatorer så fort de skrivs  
 - Kan scrollas i sidled och rullar automatiskt för att visa senaste delen  
 - Visar även kompletta uttryck efter `=`:  
