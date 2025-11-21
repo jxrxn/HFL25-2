@@ -68,8 +68,8 @@ Tryck på stora talet eller på uträkningen i remsan för att kopiera till urkl
 För desktop- och webversionerna fungerar tangentbordet för att räkna:
 
 Siffror & decimal  
-  0–9 → siffror  
-  , eller . → decimal  
+  `0–9` → siffror  
+  `,` eller `.` → decimal  
 
 Operatorer  
   `+` → plus  
@@ -79,15 +79,15 @@ Operatorer
   `%` → procent  
 
 Beräkna  
-  =  
-  Enter  
-  Numpad Enter  
+  `=`  
+  `Enter`  
+  Numpad `Enter`  
 
 Radera
-  Backspace → C (radera senaste)  
-  Cmd+Backspace eller control+Backspace (mac) → AC  
-  Ctrl+Backspace (Win/Linux) → AC  
-  (På numpad) Clear-knappen [⌧] → AC (fungerar bäst i webbläsare)  
+  `Backspace` → C (radera senaste)  
+  `Cmd+Backspace` eller `Ctrl+Backspace` (mac) → AC  
+  `Ctrl+Backspace` (Win/Linux) → AC  
+  (På numpad) Clear-knappen `[⌧]` → AC (fungerar bäst i webbläsare)  
 
 ---
 
