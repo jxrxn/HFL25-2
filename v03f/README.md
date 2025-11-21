@@ -65,7 +65,7 @@ Tryck på stora talet eller på uträkningen i remsan för att kopiera till urkl
 
 ### Tangentbordsgenvägar
 
-För desktop- och webversionerna fungerar tangentbordet för att räkna:
+Tangentbord kan användas för att räkna:
 
 Siffror & decimal  
   `0–9` → siffror  
