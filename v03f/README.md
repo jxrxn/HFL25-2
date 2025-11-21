@@ -72,11 +72,11 @@ Siffror & decimal
   , eller . → decimal  
 
 Operatorer  
-  + → plus  
-  - → minus  
-  * → multiplikation  
-  / → division  
-  % → procent  
+  `+` → plus  
+  `-` → minus  
+  `*` → multiplikation  
+  `/` → division  
+  `%` → procent  
 
 Beräkna  
   =  
