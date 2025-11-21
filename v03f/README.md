@@ -83,8 +83,8 @@ v03f/
  │       ├─ display_widget.dart
  │       └─ button_grid.dart
  ├─ test/
- │   └─ calculator_live_test.dart
- │   ├─ calculator_strip_test.dart
+ │   ├─ calculator_live_test.dart
+ │   └─ calculator_strip_test.dart
  └─ pubspec.yaml
  ```
  ---
