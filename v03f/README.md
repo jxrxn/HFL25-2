@@ -81,7 +81,6 @@ Operatorer
 Beräkna  
   `=`  
   `Enter`  
-  Numpad `Enter`  
 
 Radera  
   `Backspace` → C (radera senaste)  
