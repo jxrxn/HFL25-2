@@ -63,6 +63,34 @@ Tryck på stora talet eller på uträkningen i remsan för att kopiera till urkl
 
 ---
 
+### Tangentbordsgenvägar
+
+För desktop- och webversionerna fungerar tangentbordet för att räkna:
+
+Siffror & decimal  
+-	0–9 → siffror  
+-	, eller . → decimal  
+
+Operatorer  
+-	+ → plus  
+-	- → minus  
+-	* → multiplikation  
+- / → division  
+- % → procent  
+
+Beräkna  
+-	=  
+-	Enter  
+-	Numpad Enter  
+
+Radera
+-	Backspace → C (radera senaste)  
+-	Cmd+Backspace eller control+Backspace (mac) → AC  
+-	Ctrl+Backspace (Win/Linux) → AC  
+-	(På numpad) Clear-knappen [⌧] → AC (fungerar bäst i webbläsare)  
+
+---
+
 ### Mörkt & ljust tema
 
 Automatiskt efter systemtema, eller manuellt via AppBar-knappen.
