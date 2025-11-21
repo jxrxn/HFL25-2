@@ -103,12 +103,19 @@ int _countSigDigits(String s) {
   /// - 'C'  (kort tryck = backspace)
   /// - '=', '+', '-', '−', '×', '÷', '*', '/'
 void input(String v) {
-  // Om vi är i error-läge: låt C eller en siffra (eller decimal) börja om.
+  // 0) AC = alltid total reset, oavsett läge eller state.
+  if (v == 'AC') {
+    clearAll();
+    return;
+  }
+
+  // 1) Om vi är i error-läge: låt C eller en siffra (eller decimal) börja om.
   if (_error != null) {
     if (v == 'C' || _isDigit(v) || v == ',' || v == '.') {
       clearAll();
     } else {
-      return; // ignorera annat tills man "bryter sig ur" med C/siffra
+      // ignorera annat tills man "bryter sig ur" med C/siffra
+      return;
     }
   }
 
