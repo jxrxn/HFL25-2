@@ -16,16 +16,16 @@ Max heltalsstorlek, 27 siffror:
 ≈ 1 octillion (kort skala, t.ex. USA)  
 
 Räknaren använder Decimal-biblioteket istället för IEEE-754 double precision (64-bit flyttal) vilket undviker avrundningsfel som:  
-999 999 999.2 → 999 999 999.200000047684  
+`999 999 999.2` → `999 999 999.200000047684`  
 eller:
-0,1 + 0,2 = 0,30000000000000004 (0,1 och 0,2 kan inte representeras exakt i binär form).  
+`0,1 + 0,2 = 0,30000000000000004` (0,1 och 0,2 kan inte representeras exakt i binär form).  
 
 ---
 
 ### Live-uträkning
 Resultatet uppdateras direkt medan du skriver.  
 Exempel:  
-`20 + 3 × 2` → visar **26** direkt, även innan du tryckt `=`.
+`20 + 3 × 2` → visar `26` även innan du tryckt `=`.
 
 ---
 
