@@ -114,6 +114,10 @@ v03f/
  └─ pubspec.yaml
  ```
  ---
+
+Projektet innehåller tester för beräkningslogiken, både äldre rena enhetstester (i legacy_tests/) och nyare widgettester som verifierar logikens beteende i UI (live-preview och remsa).
+
+ ---
  
  ## Installation
 
