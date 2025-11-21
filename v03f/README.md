@@ -10,8 +10,8 @@ Korrekt operatorprioritet (×/÷ före +/−). Decimaltecken visas som komma.
 
 ### Exakt beräkning  
 Max heltalsstorlek, 27 siffror:  
-999 999 999 999 999 999 999 999 999  
-10²⁷ – 1  
+`999 999 999 999 999 999 999 999 999`  
+`10²⁷ – 1`  
 ≈ 1 kvadriljard (lång skala, Sverige)  
 ≈ 1 octillion (kort skala, t.ex. USA)  
 
