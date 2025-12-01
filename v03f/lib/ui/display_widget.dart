@@ -6,11 +6,13 @@ import 'package:auto_size_text/auto_size_text.dart';
 class DisplayWidget extends StatelessWidget {
   final String valueText;
   final String stripText;
+  final bool isLandscape; // <---- NY
 
   const DisplayWidget({
     super.key,
     required this.valueText,
     required this.stripText,
+    this.isLandscape = false, // <---- default
   });
 
   /// Tunna mellanrum för tusental (för tal i form "12345.67").
@@ -66,10 +68,13 @@ class DisplayWidget extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: scheme.surfaceContainerHighest,
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+      padding: isLandscape
+        ? const EdgeInsets.fromLTRB(24, 12, 24, 12) // mindre i landscape
+        : const EdgeInsets.fromLTRB(24, 24, 24, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+
 // ===== ÖVRE REMSAN – horisontellt scrollbar & klickbar =====
 SizedBox(
   height: (theme.textTheme.bodyLarge?.fontSize ?? 16) * 1.4,
@@ -102,9 +107,10 @@ SizedBox(
       alignment: Alignment.centerRight,
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        reverse: true, // visa slutet (senaste) till höger
+        reverse: true,
         child: Text(
           displayStrip,
+          key: const Key('display-strip-text'),
           textAlign: TextAlign.right,
           style: theme.textTheme.bodyLarge?.copyWith(
             color: stripColor,
@@ -149,7 +155,7 @@ SizedBox(
                 alignment: Alignment.bottomRight,
                 child: AutoSizeText(
                   displayValue,
-                  key: const Key('display'),
+                  key: const Key('display-main-value'),
                   maxLines: 1,
                   minFontSize: 18,
                   stepGranularity: 1,

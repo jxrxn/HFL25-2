@@ -1,3 +1,4 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'calculator_screen.dart';
 
@@ -11,11 +12,23 @@ class CalculatorApp extends StatefulWidget {
 }
 
 class _CalculatorAppState extends State<CalculatorApp> {
-  ThemeMode _mode = ThemeMode.dark;
+  /// Aktuellt temaläge:
+  /// - ThemeMode.system = "auto" (följer OS)
+  /// - ThemeMode.dark   = mörkt
+  /// - ThemeMode.light  = ljust
+  ThemeMode _mode = ThemeMode.system;
 
+  /// Cyklar mellan:
+  ///   system → dark → light → system …
   void _toggleTheme() {
     setState(() {
-      _mode = _mode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+      if (_mode == ThemeMode.system) {
+        _mode = ThemeMode.dark;
+      } else if (_mode == ThemeMode.dark) {
+        _mode = ThemeMode.light;
+      } else {
+        _mode = ThemeMode.system;
+      }
     });
   }
 
@@ -27,6 +40,7 @@ class _CalculatorAppState extends State<CalculatorApp> {
         brightness: Brightness.dark,
       ),
     );
+
     final light = ThemeData.light(useMaterial3: true).copyWith(
       colorScheme: ColorScheme.fromSeed(
         seedColor: Colors.deepPurple,
