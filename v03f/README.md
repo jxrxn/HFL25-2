@@ -34,13 +34,10 @@ Den övre remsan visar beräkningen, har minne och visas som flera rader i displ
 
   Siffror och operatorer visas så fort de skrivs.  
   Visar komplett uträkning efter `=`: `20 + 3 × 2 = 26`  
-
-  Varrje uträkning kan scrollas i sidled om de är långa och rullar automatiskt för att visa senaste delen. Senaste uträkningen ligger längst ner, äldre skjuts uppåt.  
-
-  Historiken kan scrollas vertikalt och ett klick på uträkningarna kopierar till urklipp.  
+ 
   Regler för ny rad i historiken:  
   
-  Trycker du = och fortsätter med en operator (+, −, ×, ÷, %):  
+  Trycker du `=` och fortsätter med en operator (`+, −, ×, ÷, %`):  
   -	Resultatet används som start för beräkning på en ny rad.  
 
   ```
@@ -56,6 +53,10 @@ Den övre remsan visar beräkningen, har minne och visas som flera rader i displ
 	20 + 3 × 2 = 26
 	33 × 2 = 66
   ```
+
+  Senaste uträkningen ligger längst ner, äldre skjuts uppåt.  
+  Varrje uträkning kan scrollas i sidled om de är långa.  
+  Historiken kan scrollas vertikalt.  
 
 ---
 
