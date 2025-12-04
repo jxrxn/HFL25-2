@@ -41,12 +41,21 @@ Den övre remsan visar beräkningen, har minne och visas som flera rader i displ
   Regler för ny rad i historiken:  
   
   Trycker du = och fortsätter med en operator (+, −, ×, ÷, %):  
-  -	Resultatet används som start för beräkning på en ny rad.
+  -	Resultatet används som start för beräkning på en ny rad.  
+
+  ```
+	20 + 3 × 2 = 26
+	26 × 3 = 78
+  ```
 
   Trycker du = och börjar med en siffra eller komma:  
-  -	Den gamla beräkningen blir låst.
-	-	På remsan: gammal rad kvar ovanför, ny uttrycksrad under.
-
+  -	Den gamla beräkningen blir låst.  
+  -	På remsan: gammal rad kvar ovanför, ny uttrycksrad under.  
+  
+  ```
+	20 + 3 × 2 = 26
+	33 × 2 = 66
+  ```
 
 ---
 
