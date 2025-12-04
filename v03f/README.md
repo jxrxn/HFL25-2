@@ -55,7 +55,7 @@ Den övre remsan visar beräkningen, har minne och visas som flera rader i displ
   ```
 
   Senaste uträkningen ligger längst ner, äldre skjuts uppåt.  
-  Varrje uträkning kan scrollas i sidled om de är långa.  
+  Varje uträkning kan scrollas i sidled om de är långa.  
   Historiken kan scrollas vertikalt.  
 
 ---
