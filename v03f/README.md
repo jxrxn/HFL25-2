@@ -150,7 +150,7 @@ v03f/
  ---
 
 ### Test  
-Widgettester verifierar logikens beteende i UI (live-preview och remsa).
+Widgettester verifierar logikens beteende i UI (live-preview och beräkningshistorik).
 
  ---
  
