@@ -4,16 +4,17 @@ import 'package:decimal/decimal.dart';
 class CalculatorEngine {
   // ===== Gränser =====
   static const int _maxSigDigits = 27;            // max signifikanta siffror
+  static const int _maxFractionDigits = 20;     // max decimaler vi tillåter från division
+
   static final Decimal _maxAbs =
       Decimal.parse('999999999999999999999999999');           // gräns i Decimal
 
   /// Hjälp: gör en exakt division a/b och får tillbaka Decimal.
   static Decimal _divDecimal(Decimal a, Decimal b) {
-    // Gör om till Rational först
     final r = a.toRational() / b.toRational();
-    // Tillbaka till Decimal med begränsad precision
+    // Begränsa hur många DECIMALER som skapas vid oändlig utveckling
     return r.toDecimal(
-      scaleOnInfinitePrecision: _maxSigDigits,
+      scaleOnInfinitePrecision: _maxFractionDigits,
     );
   }
 
