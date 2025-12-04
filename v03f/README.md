@@ -30,10 +30,23 @@ Exempel:
 ---
 
 ### Beräkningshistorik
-Den övre remsan visar beräkningen:  
-  Visar siffror och operatorer så fort de skrivs.  
-  Kan scrollas i sidled och rullar automatiskt för att visa senaste delen.  
+Den övre remsan visar beräkningen, har minne och visas som flera rader i displayen.  
+
+  Siffror och operatorer visas så fort de skrivs.  
   Visar komplett uträkning efter `=`: `20 + 3 × 2 = 26`  
+
+  Varrje uträkning kan scrollas i sidled om de är långa och rullar automatiskt för att visa senaste delen. Senaste uträkningen ligger längst ner, äldre skjuts uppåt.  
+
+  Historiken kan scrollas vertikalt och ett klick på uträkningarna kopierar till urklipp.  
+  Regler för ny rad i historiken:  
+  
+  Trycker du = och fortsätter med en operator (+, −, ×, ÷, %):  
+  -	Resultatet används som start för beräkning på en ny rad.
+
+  Trycker du = och börjar med en siffra eller komma:  
+  -	Den gamla beräkningen blir låst.
+	-	På remsan: gammal rad kvar ovanför, ny uttrycksrad under.
+
 
 ---
 
@@ -53,12 +66,23 @@ Den övre remsan visar beräkningen:
 ### Rensa & redigera
 Kort tryck på `C` raderar det senaste.  
 Långt tryck på `C` rensar allt (AC).  
+- Reset av motor och “nuvarande” uttryck (tokens + current), men historik i remsan ligger kvar.  
+Tryck på krysset uppe i displayens hörn gör en full reset.  
+- Tömmer historik (historyLines + _currentStripLine).  
+-	Nollställer motorn (clearAll).  
+-	Återställning av state så att allt är helt rent.  
 
 ---
 
 ### Kopiera resultat eller uträkning
 
-Tryck på stora talet eller på uträkningen i remsan för att kopiera till urklipp.
+Tryck på stora talet eller på uträkningarna i remsan för att kopiera till urklipp.  
+
+---
+
+### Landscape – iOS / Android
+
+Ny landskaplayout för mobil/platta med display till vänster och knappsats till höger.  
 
 ---
 
