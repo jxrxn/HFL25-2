@@ -150,7 +150,7 @@ v03f/
  ---
 
 ### Test  
-Projektet innehåller tester för beräkningslogiken, både äldre rena enhetstester och nyare widgettester som verifierar logikens beteende i UI (live-preview och remsa).
+Widgettester verifierar logikens beteende i UI (live-preview och remsa).
 
  ---
  
